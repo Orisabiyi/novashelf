@@ -1,5 +1,7 @@
-<script setup></script>
+<script setup>
+import HeroOnboarding from "@/components/onboarding/HeroOnboarding.vue";
+</script>
 
 <template>
-  <h1>NovaShelf</h1>
+  <HeroOnboarding />
 </template>
