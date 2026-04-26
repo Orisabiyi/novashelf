@@ -35,7 +35,7 @@ const navLinks = [
       <h1 class="text-2xl font-medium">novashelf</h1>
     </a>
 
-    <ul class="ml-auto flex items-center gap-10">
+    <ul class="ml-auto flex items-center gap-10 2xl:text-lg">
       <li
         v-for="navLink in navLinks"
         :key="navLink.path"
