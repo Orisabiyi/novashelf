@@ -24,7 +24,7 @@ const navLinks = [
 </script>
 
 <template>
-  <nav class="p-10 2xl:px-32 flex bg-gray-200/20">
+  <nav class="p-10 2xl:py-5 2xl:px-48 flex bg-gray-200/20">
     <a href="/" class="flex items-center gap-2 block">
       <figure class="w-20 h-auto flex items-center justify-center">
         <img
@@ -35,7 +35,7 @@ const navLinks = [
       <h1 class="text-2xl text-base-red font-medium">novashelf</h1>
     </a>
 
-    <ul class="ml-auto flex items-center gap-10 2xl:text-lg">
+    <ul class="ml-auto flex items-center gap-10 2xl:text-base">
       <li
         v-for="navLink in navLinks"
         :key="navLink.path"
@@ -48,6 +48,7 @@ const navLinks = [
 
 <style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap");
+
 h1 {
   font-family: "Space Grotesk", sans-serif;
 }
