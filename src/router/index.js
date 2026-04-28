@@ -1,4 +1,5 @@
 import HeroOnboarding from "@/views/HeroOnboarding.vue";
+import Onboard from "@/views/Onboard.vue";
 import { createRouter, createWebHistory } from "vue-router";
 
 const router = createRouter({
@@ -8,6 +9,11 @@ const router = createRouter({
       path: "/",
       name: "home",
       component: HeroOnboarding,
+    },
+    {
+      path: "/sign-up",
+      name: "sign up",
+      component: Onboard,
     },
   ],
 });
