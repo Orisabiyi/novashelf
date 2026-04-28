@@ -27,6 +27,12 @@ import Card from "../shared/Card.vue";
         The universe is fascinating you shouldn't need a PhD to enjoy it.
         Explore NASA's best content, simplified for the curious.
       </p>
+
+      <a
+        href="/sign-up"
+        class="bg-base-red px-4 py-1 rounded-md text-gray-100 text-lg"
+        >Sign for <span class="product-name font-bold">novashelf</span></a
+      >
     </div>
 
     <div class="flex-1 h-full overflow-hidden flex items-center gap-4">
@@ -53,7 +59,8 @@ import Card from "../shared/Card.vue";
 <style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap");
 
-h3 {
+h3,
+.product-name {
   font-family: "Space Grotesk", sans-serif;
 }
 </style>
