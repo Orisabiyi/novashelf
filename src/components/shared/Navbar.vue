@@ -1,4 +1,5 @@
 <script setup>
+import { defineProps } from "vue";
 import logoImg from "@/assets/novashelf-logo-ord.svg";
 
 const navLinks = [
@@ -21,10 +22,14 @@ const navLinks = [
     type: "button",
   },
 ];
+
+defineProps({
+  className: String,
+});
 </script>
 
 <template>
-  <nav class="p-10 2xl:py-5 2xl:px-48 flex bg-gray-200/20">
+  <nav :class="`px-10 py-5 2xl:px-48 flex bg-gray-100 z-10 ${className}`">
     <a href="/" class="flex items-center gap-2 block">
       <figure class="w-20 h-auto flex items-center justify-center">
         <img

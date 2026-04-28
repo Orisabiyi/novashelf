@@ -5,9 +5,9 @@ import Card from "../shared/Card.vue";
 </script>
 
 <template>
-  <Navbar />
+  <Navbar className="fixed top-0 left-0 w-full" />
 
-  <header class="h-[90vh] flex items-center p-10 2xl:py-5 2xl:px-48">
+  <header class="h-screen flex items-center p-10 2xl:py-5 2xl:px-48">
     <div class="w-2/5 flex flex-col items-start gap-5">
       <div class="flex items-center gap-2">
         <figure class="w-12 h-auto flex items-center justify-center">
@@ -23,20 +23,20 @@ import Card from "../shared/Card.vue";
         Space made simple
       </h2>
 
-      <p class="text-xl w-2/3">
+      <p class="text-xl w-5/6">
         The universe is fascinating you shouldn't need a PhD to enjoy it.
         Explore NASA's best content, simplified for the curious.
       </p>
     </div>
 
-    <div class="flex-1 h-full -mt-16 overflow-hidden flex items-center gap-4">
+    <div class="flex-1 h-full overflow-hidden flex items-center gap-4">
       <div class="space-y-4">
         <Card />
         <Card />
         <Card />
       </div>
 
-      <div class="space-y-4 translate-y-8">
+      <div class="space-y-4 translate-y-5">
         <Card />
         <Card />
       </div>
