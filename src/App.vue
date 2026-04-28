@@ -1,7 +1,9 @@
 <script setup>
-import HeroOnboarding from "@/components/onboarding/HeroOnboarding.vue";
+import Navbar from "@/components/shared/Navbar.vue";
+import { RouterView } from "vue-router";
 </script>
 
 <template>
-  <HeroOnboarding />
+  <Navbar className="fixed top-0 left-0 w-full" />
+  <RouterView />
 </template>

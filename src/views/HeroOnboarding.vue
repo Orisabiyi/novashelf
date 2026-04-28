@@ -1,12 +1,9 @@
 <script setup>
 import logoImg from "@/assets/novashelf-logo-ord.svg";
-import Navbar from "../shared/Navbar.vue";
-import Card from "../shared/Card.vue";
+import Card from "@/components/shared/Card.vue";
 </script>
 
 <template>
-  <Navbar className="fixed top-0 left-0 w-full" />
-
   <header class="h-screen flex items-center p-10 2xl:py-5 2xl:px-48">
     <div class="w-2/5 flex flex-col items-start gap-5">
       <div class="flex items-center gap-2">
