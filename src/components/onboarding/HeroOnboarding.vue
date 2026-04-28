@@ -1,13 +1,14 @@
 <script setup>
 import logoImg from "@/assets/novashelf-logo-ord.svg";
 import Navbar from "../shared/Navbar.vue";
+import Card from "../shared/Card.vue";
 </script>
 
 <template>
   <Navbar />
 
-  <header class="h-screen flex items-center p-10 p-10 2xl:py-5 2xl:px-48">
-    <div class="w-1/2 flex flex-col items-start gap-5">
+  <header class="h-[90vh] flex items-center p-10 2xl:py-5 2xl:px-48">
+    <div class="w-2/5 flex flex-col items-start gap-5">
       <div class="flex items-center gap-2">
         <figure class="w-12 h-auto flex items-center justify-center">
           <img
@@ -18,7 +19,7 @@ import Navbar from "../shared/Navbar.vue";
         <h3 class="font-medium">Powered by NASA</h3>
       </div>
 
-      <h2 class="text-7xl text-base-red font-bold flex flex-col">
+      <h2 class="text-6xl text-base-red font-bold flex flex-col">
         Space made simple
       </h2>
 
@@ -28,7 +29,24 @@ import Navbar from "../shared/Navbar.vue";
       </p>
     </div>
 
-    <div class="w-1/2 h-full"></div>
+    <div class="flex-1 h-full -mt-16 overflow-hidden flex items-center gap-4">
+      <div class="space-y-4">
+        <Card />
+        <Card />
+        <Card />
+      </div>
+
+      <div class="space-y-4 translate-y-8">
+        <Card />
+        <Card />
+      </div>
+
+      <div class="space-y-4">
+        <Card />
+        <Card />
+        <Card />
+      </div>
+    </div>
   </header>
 </template>
 
