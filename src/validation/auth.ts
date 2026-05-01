@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
-const login = z.object({
+export const authSchema = z.object({
   email: z.email(),
+  age: z.number().max(4),
   password: z.string().min(5).max(20)
 })
