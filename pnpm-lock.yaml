@@ -26,6 +26,9 @@ importers:
       vue-router:
         specifier: ^5.0.6
         version: 5.0.6(@vue/compiler-sfc@3.5.33)(vue@3.5.33)
+      zod:
+        specifier: ^4.4.1
+        version: 4.4.1
     devDependencies:
       '@vitejs/plugin-vue':
         specifier: ^6.0.6
@@ -1000,6 +1003,9 @@ packages:
     engines: {node: '>= 14.6'}
     hasBin: true
 
+  zod@4.4.1:
+    resolution: {integrity: sha512-a6ENMBBGZBsnlSebQ/eKCguSBeGKSf4O7BPnqVPmYGtpBYI7VSqoVqw+QcB7kPRjbqPwhYTpFbVj/RqNz/CT0Q==}
+
 snapshots:
 
   '@babel/code-frame@7.29.0':
@@ -1932,3 +1938,5 @@ snapshots:
   yallist@3.1.1: {}
 
   yaml@2.8.3: {}
+
+  zod@4.4.1: {}

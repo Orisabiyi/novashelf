@@ -3,11 +3,15 @@ import { ref } from "vue";
 import logoImg from "@/assets/novashelf-logo.svg";
 
 const email = ref("");
+
+function handleSubmit() {
+  console.log(email.value);
+}
 </script>
 
 <template>
   <div
-    class="border-2 border-gray-300 rounded-xl h-[500px] p-8 2xl:w-1/3 flex flex-col items-center gap-4 text-center">
+    class="border-2 border-gray-300 rounded-xl h-[500px] p-8 w-1/3 flex flex-col items-center gap-4 text-center">
     <figure class="w-20 h-auto">
       <img :src="logoImg" alt="" class="w-full h-full inline-block" />
     </figure>
@@ -20,13 +24,15 @@ const email = ref("");
     </p>
 
     <form
+      @submit.prevent="handleSubmit"
       class="flex flex-col items-stretch justify-stretch w-full mt-4 space-y-4">
       <input
         type="email"
         placeholder="Email"
         v-model="email"
         class="block border-2 border-gray-300 rounded-sm p-2 focus:outline-none" />
-      <button class="block bg-base-red/80 text-gray-100 p-2 rounded-sm">
+      <button
+        class="block bg-base-red/80 hover:bg-base-red text-gray-100 p-2 rounded-sm">
         Sign Up
       </button>
     </form>
