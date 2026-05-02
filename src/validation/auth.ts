@@ -1,5 +1,9 @@
 import { z } from 'zod'
 
+export const emailSchema = z.object({
+  email: z.email()
+})
+
 export const authSchema = z.object({
   email: z.email(),
   age: z.number().max(4),
