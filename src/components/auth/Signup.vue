@@ -31,7 +31,7 @@ function handleSubmit() {
       `${(emailResult.error.issues[0].path[0], emailResult.error.issues[0].message)}`,
     );
 
-  step.value += 1;
+  if (step.value !== 2) return (step.value += 1);
 
   const result = authSchema.safeParse(payload);
   if (!result.success)
@@ -72,13 +72,13 @@ function handleSubmit() {
 
       <input
         type="password"
-        placeholder="Confirm Password"
+        placeholder="Repeat Password"
         v-model="confirmPassword"
         :class="`border-2 border-gray-300 rounded-sm p-2 focus:outline-none ${step === 2 ? 'block' : 'hidden'}`" />
 
       <input
         type="number"
-        placeholder="Age"
+        placeholder="How old are you?"
         v-model="age"
         :class="`border-2 border-gray-300 rounded-sm p-2 focus:outline-none ${step === 2 ? 'block' : 'hidden'}`" />
 
