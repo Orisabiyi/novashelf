@@ -22,6 +22,7 @@ function handleSubmit() {
     age: Number(age.value),
     email: email.value,
     password: password.value,
+    confirmPassword: confirmPassword.value,
   };
 
   const emailResult = emailSchema.safeParse({ email: email.value });
@@ -89,7 +90,7 @@ function handleSubmit() {
 
       <button
         class="block bg-base-red/80 hover:bg-base-red text-gray-100 p-2 rounded-sm">
-        Sign Up
+        {{ step === 1 ? "Sign Up" : "Create an account" }}
       </button>
     </form>
   </div>
