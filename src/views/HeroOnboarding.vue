@@ -1,6 +1,7 @@
 <script setup>
 import logoImg from "@/assets/novashelf-logo-ord.svg";
 import Card from "@/components/shared/Card.vue";
+import { RouterLink } from "vue-router";
 </script>
 
 <template>
@@ -25,11 +26,12 @@ import Card from "@/components/shared/Card.vue";
         Explore NASA's best content, simplified for the curious.
       </p>
 
-      <a
-        href="/sign-up"
+      <RouterLink
+        to="/sign-up"
         class="bg-base-red px-4 py-1 rounded-md text-gray-100 text-lg"
-        >Sign for <span class="product-name font-bold">novashelf</span></a
-      >
+        >Sign for
+        <span class="product-name font-bold">novashelf</span>
+      </RouterLink>
     </div>
 
     <div class="flex-1 h-full overflow-hidden flex items-center gap-4">

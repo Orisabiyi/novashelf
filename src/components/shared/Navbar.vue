@@ -45,7 +45,7 @@ defineProps({
         v-for="navLink in navLinks"
         :key="navLink.path"
         :class="`${navLink.type === 'button' ? 'bg-base-red px-4 py-1 font-medium rounded-md text-gray-100' : ''}`">
-        <a :href="navLink.path">{{ navLink.name }}</a>
+        <RouterLink :to="navLink.path">{{ navLink.name }}</RouterLink>
       </li>
     </ul>
   </nav>
