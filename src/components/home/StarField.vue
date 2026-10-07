@@ -90,6 +90,13 @@ onBeforeUnmount(() => {
 <template>
   <canvas
     ref="canvas"
-    class="absolute inset-0 size-full text-ink pointer-events-none"
+    class="starfield absolute inset-0 size-full text-ink pointer-events-none"
     aria-hidden="true"></canvas>
 </template>
+
+<style>
+/* Dark stars on a light page read as dust; keep them faint there. */
+:root[data-theme="light"] .starfield {
+  opacity: 0.35;
+}
+</style>

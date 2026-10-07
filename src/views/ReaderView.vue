@@ -3,11 +3,21 @@ import { computed, ref, watch } from "vue";
 import { RouterLink, useRoute, useRouter } from "vue-router";
 import DOMPurify from "dompurify";
 import { getReadable } from "@/api/content";
+import ReaderSettings from "@/components/reader/ReaderSettings.vue";
+import { FONT_SIZES, WIDTHS, useReaderPreferences } from "@/composables/useReaderPreferences";
 import { formatLongDate, formatRelativeDate } from "@/utils/format";
 import { itemTag } from "@/utils/topics";
 
 const route = useRoute();
 const router = useRouter();
+const preferences = useReaderPreferences();
+
+const maxWidth = computed(
+  () => WIDTHS.find((w) => w.value === preferences.width)?.maxWidth ?? "68ch",
+);
+const proseSize = computed(
+  () => FONT_SIZES.find((f) => f.value === preferences.fontSize)?.proseClass ?? "prose-lg",
+);
 
 /** @type {import("vue").Ref<import("@/api/content").ReadableContent | null>} */
 const readable = ref(null);
@@ -87,14 +97,17 @@ function goBack() {
 
 <template>
   <article class="px-6 pt-8 pb-20 lg:px-10">
-    <div class="mx-auto max-w-[68ch]">
-      <button
-        type="button"
-        class="mb-8 inline-flex items-center gap-2 rounded-full px-3 py-1.5 -ml-3 text-sm font-medium text-muted hover:text-ink hover:bg-surface transition-colors"
-        @click="goBack">
-        <i class="pi pi-arrow-left" style="font-size: 0.75rem" aria-hidden="true"></i>
-        Back
-      </button>
+    <div class="mx-auto transition-[max-width] duration-300" :style="{ maxWidth }">
+      <div class="mb-8 flex items-center justify-between gap-4">
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 -ml-3 text-sm font-medium text-muted hover:text-ink hover:bg-surface transition-colors"
+          @click="goBack">
+          <i class="pi pi-arrow-left" style="font-size: 0.75rem" aria-hidden="true"></i>
+          Back
+        </button>
+        <ReaderSettings />
+      </div>
 
       <!-- Loading -->
       <div v-if="loading" class="space-y-6 animate-pulse" aria-busy="true" aria-label="Loading article">
@@ -198,7 +211,8 @@ function goBack() {
         </div>
 
         <div
-          class="prose prose-lg max-w-none mt-8 prose-headings:font-display prose-img:rounded-xl prose-a:underline-offset-2 prose-figcaption:text-sm"
+          :class="proseSize"
+          class="prose max-w-none mt-8 prose-headings:font-display prose-img:rounded-xl prose-a:underline-offset-2 prose-figcaption:text-sm"
           v-html="safeHtml"></div>
 
         <footer

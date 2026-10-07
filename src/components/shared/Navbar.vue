@@ -33,7 +33,7 @@ watch(
   <header
     class="sticky top-0 z-20 px-4 pt-4 lg:px-10 2xl:px-48 pointer-events-none">
     <nav
-      class="pointer-events-auto flex items-center gap-2 rounded-full border border-on-nav/10 bg-nav/80 backdrop-blur-md text-on-nav pl-4 pr-2 py-2 shadow-lg shadow-black/30">
+      class="pointer-events-auto flex items-center gap-2 rounded-full border border-on-nav/10 bg-nav/95 backdrop-blur-md text-on-nav pl-4 pr-2 py-2 shadow-lg shadow-black/30">
       <RouterLink to="/" class="flex items-center gap-2 rounded-full pr-2">
         <img :src="logoImg" alt="" class="w-11 h-auto" />
         <span class="font-display text-xl font-medium text-brand">novashelf</span>
