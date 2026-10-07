@@ -1,5 +1,5 @@
 /** Primeicons class for each topic slug (see server Topics.cs). */
-const TOPIC_ICONS = {
+export const TOPIC_ICONS = {
   mars: "pi-globe",
   moon: "pi-moon",
   iss: "pi-building",
