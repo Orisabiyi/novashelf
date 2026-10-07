@@ -35,6 +35,10 @@ public sealed class SpaceflightNewsClient(HttpClient http, IMemoryCache cache)
                 ?? throw new HttpRequestException("Empty response from Spaceflight News API");
 
             var items = response.Results.Where(a => !IsApod(a)).Select(Map).ToList();
+
+            // Opening an article looks it up by id; the feed already has it, so save the round trip.
+            foreach (var article in response.Results)
+                cache.Set($"sfn:article:{article.Id}", (ContentItem?)Map(article), ArticleTtl);
             return new PagedResult<ContentItem>(items, page, response.Next is not null);
         }))!;
     }
