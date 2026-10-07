@@ -24,7 +24,7 @@ builder.Services.AddHttpClient<SpaceflightNewsClient>(c =>
 
 builder.Services.AddHttpClient<ApodClient>(c =>
 {
-    c.BaseAddress = new Uri("https://api.nasa.gov/");
+    c.BaseAddress = new Uri("https://science.nasa.gov/wp-json/wp/v2/");
     c.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
 }).AddStandardResilienceHandler();
 

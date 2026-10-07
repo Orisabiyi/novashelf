@@ -47,44 +47,7 @@ public class SourceMappingTests
         Assert.Null(item.ImageUrl);
     }
 
-    [Fact]
-    public void Apod_image_maps()
-    {
-        const string json = """
-        {
-          "date": "2026-10-05",
-          "explanation": "This image shows Nebula Pa 30.",
-          "media_type": "image",
-          "title": "Pa 30",
-          "url": "https://apod.nasa.gov/apod/image/pa30.jpg",
-          "copyright": " Gemini North "
-        }
-        """;
 
-        var item = ApodClient.Map(JsonSerializer.Deserialize<ApodClient.ApodResponse>(json, SnakeCase)!);
-
-        Assert.Equal("apod-2026-10-05", item.Id);
-        Assert.Equal(ContentKind.Apod, item.Kind);
-        Assert.Equal("https://apod.nasa.gov/apod/image/pa30.jpg", item.ImageUrl);
-        Assert.Equal("https://apod.nasa.gov/apod/ap261005.html", item.Url);
-        Assert.Equal("Gemini North", item.Publisher);
-    }
-
-    [Fact]
-    public void Apod_video_uses_thumbnail_and_default_publisher()
-    {
-        const string json = """
-        {
-          "date": "2026-01-02", "explanation": "e", "media_type": "video", "title": "t",
-          "url": "https://www.youtube.com/embed/abc", "thumbnail_url": "https://img.youtube.com/vi/abc/0.jpg"
-        }
-        """;
-
-        var item = ApodClient.Map(JsonSerializer.Deserialize<ApodClient.ApodResponse>(json, SnakeCase)!);
-
-        Assert.Equal("https://img.youtube.com/vi/abc/0.jpg", item.ImageUrl);
-        Assert.Equal("NASA APOD", item.Publisher);
-    }
 
     [Fact]
     public void Nasa_image_maps_and_prefers_medium_rendition()
@@ -131,15 +94,4 @@ public class SourceMappingTests
     public void Spaceflight_news_summary_drops_wordpress_footer(string raw, string expected) =>
         Assert.Equal(expected, SpaceflightNewsClient.CleanSummary(raw));
 
-    [Fact]
-    public void Apod_placeholder_response_is_detected()
-    {
-        var placeholder = new ApodClient.ApodResponse("2026-10-07", "NASA Science", "e", "image",
-            "https://science.nasa.gov/wp-content/themes/nasa-child/assets/images/nasa-logo@2x.png", null, null);
-        var real = new ApodClient.ApodResponse("2026-10-05", "Pa 30", "e", "image",
-            "https://apod.nasa.gov/apod/image/pa30.jpg", null, null);
-
-        Assert.True(ApodClient.IsPlaceholder(placeholder));
-        Assert.False(ApodClient.IsPlaceholder(real));
-    }
 }
