@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Space+Grotesk:wght@300..700&display=swap");
 @import "tailwindcss";
 
 /*
@@ -14,6 +14,8 @@
  *   link      small red text, links, active/hover states (5.7:1 dark, 5.2:1 light)
  */
 @theme {
+  --font-display: "Space Grotesk", "DM Sans", sans-serif;
+
   --color-brand: #d85357;
   --color-action: #d85357;
   --color-on-action: #171615;
