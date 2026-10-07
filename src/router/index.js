@@ -1,4 +1,5 @@
 import HeroOnboarding from "@/views/HeroOnboarding.vue";
+import NotFound from "@/views/NotFound.vue";
 import Onboard from "@/views/Onboard.vue";
 import { createRouter, createWebHistory } from "vue-router";
 
@@ -14,6 +15,11 @@ const router = createRouter({
       path: "/sign-up",
       name: "sign up",
       component: Onboard,
+    },
+    {
+      path: "/:pathMatch(.*)*",
+      name: "not-found",
+      component: NotFound,
     },
   ],
 });
