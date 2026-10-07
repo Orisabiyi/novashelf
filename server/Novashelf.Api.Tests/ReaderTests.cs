@@ -113,6 +113,30 @@ public class ArticleSanitizerTests
     }
 }
 
+public class PageChromeTests
+{
+    private const string Base = "https://science.nasa.gov/photojournal/x/";
+
+    [Fact]
+    public void Template_furniture_is_removed()
+    {
+        var html = ArticleSanitizer.Sanitize(
+            "<p>2 Min Read</p><p>10/07/2026</p><p>The rover looked back.</p><p>Keep Exploring</p>" +
+            "<h2>Discover More Topics From Photojournal</h2>", Base);
+
+        Assert.Equal("<p>The rover looked back.</p>", html);
+    }
+
+    [Fact]
+    public void Headings_followed_by_content_and_sentences_mentioning_reading_stay()
+    {
+        var html = ArticleSanitizer.Sanitize(
+            "<h2>Why it matters</h2><p>A 5 min read can still explain a lot.</p><p>Launch is set for 10/07/2026.</p>", Base);
+
+        Assert.Equal("<h2>Why it matters</h2><p>A 5 min read can still explain a lot.</p><p>Launch is set for 10/07/2026.</p>", html);
+    }
+}
+
 public class ReaderSummaryTests
 {
     private static ContentItem Item(string summary) =>
