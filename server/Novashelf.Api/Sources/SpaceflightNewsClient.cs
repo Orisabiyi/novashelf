@@ -62,7 +62,8 @@ public sealed class SpaceflightNewsClient(HttpClient http, IMemoryCache cache)
         ImageUrl: string.IsNullOrWhiteSpace(a.ImageUrl) ? null : a.ImageUrl,
         Url: a.Url,
         Publisher: a.NewsSite,
-        PublishedAt: a.PublishedAt);
+        PublishedAt: a.PublishedAt,
+        Topic: Topics.Tag(a.Title));
 
     /// <summary>
     /// Spaceflight News also indexes NASA's APOD pages, with summaries scraped from the page chrome.

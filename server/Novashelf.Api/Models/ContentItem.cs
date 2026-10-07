@@ -18,6 +18,7 @@ public sealed record ContentItem(
     string? ImageUrl,
     string? Url,
     string? Publisher,
-    DateTimeOffset? PublishedAt);
+    DateTimeOffset? PublishedAt,
+    TopicTag? Topic = null);
 
 public sealed record PagedResult<T>(IReadOnlyList<T> Items, int Page, bool HasMore);
