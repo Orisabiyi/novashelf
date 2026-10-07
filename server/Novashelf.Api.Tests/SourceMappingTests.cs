@@ -89,6 +89,14 @@ public class SourceMappingTests
     }
 
     [Theory]
+    [InlineData("APOD: 2026 October 7 – Supernova Remnant Pa 30", "https://science.nasa.gov/image-article/apod-2026-october-7-supernova-remnant-pa-30/", true)]
+    [InlineData("Supernova Remnant Pa 30", "https://science.nasa.gov/image-article/apod/apod-2026-august-23-cassini/", true)]
+    [InlineData("Arctic Sea Ice Shrinks to Its 2026 Minimum", "https://science.nasa.gov/earth/earth-observatory/arctic-sea-ice/", false)]
+    [InlineData("Apodemus mice in orbit", "https://www.esa.int/mice", false)]
+    public void Apod_entries_are_recognised(string title, string url, bool expected) =>
+        Assert.Equal(expected, SpaceflightNewsClient.IsApod(new SpaceflightNewsClient.SfnArticle(1, title, url, null, "NASA", "s", null)));
+
+    [Theory]
     [InlineData("Meet the finalists.\nThe post Announcing the finalists appeared first on SpaceNews.", "Meet the finalists.")]
     [InlineData("No footer here.", "No footer here.")]
     public void Spaceflight_news_summary_drops_wordpress_footer(string raw, string expected) =>

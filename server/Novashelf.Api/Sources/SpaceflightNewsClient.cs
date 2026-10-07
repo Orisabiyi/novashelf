@@ -34,7 +34,8 @@ public sealed class SpaceflightNewsClient(HttpClient http, IMemoryCache cache)
             var response = await http.GetFromJsonAsync<SfnList>(url, Json, ct)
                 ?? throw new HttpRequestException("Empty response from Spaceflight News API");
 
-            return new PagedResult<ContentItem>(response.Results.Select(Map).ToList(), page, response.Next is not null);
+            var items = response.Results.Where(a => !IsApod(a)).Select(Map).ToList();
+            return new PagedResult<ContentItem>(items, page, response.Next is not null);
         }))!;
     }
 
@@ -62,6 +63,14 @@ public sealed class SpaceflightNewsClient(HttpClient http, IMemoryCache cache)
         Url: a.Url,
         Publisher: a.NewsSite,
         PublishedAt: a.PublishedAt);
+
+    /// <summary>
+    /// Spaceflight News also indexes NASA's APOD pages, with summaries scraped from the page chrome.
+    /// APOD has its own endpoint, so keep it out of the article feed. (The API has no exclude filter.)
+    /// </summary>
+    internal static bool IsApod(SfnArticle a) =>
+        a.Title.TrimStart().StartsWith("APOD:", StringComparison.OrdinalIgnoreCase)
+        || a.Url.Contains("science.nasa.gov/image-article/apod", StringComparison.OrdinalIgnoreCase);
 
     // WordPress feeds append "The post <title> appeared first on <site>." to the summary.
     private static readonly Regex WordPressFooter = new(@"\s*The post .+ appeared first on .+\.\s*$", RegexOptions.Singleline | RegexOptions.Compiled);
