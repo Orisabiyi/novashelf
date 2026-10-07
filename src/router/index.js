@@ -2,6 +2,7 @@ import ExploreView from "@/views/ExploreView.vue";
 import HomeView from "@/views/HomeView.vue";
 import NotFound from "@/views/NotFound.vue";
 import Onboard from "@/views/Onboard.vue";
+import ReaderView from "@/views/ReaderView.vue";
 import { createRouter, createWebHistory } from "vue-router";
 
 const router = createRouter({
@@ -26,6 +27,11 @@ const router = createRouter({
       component: ExploreView,
     },
     {
+      path: "/read/:id",
+      name: "read",
+      component: ReaderView,
+    },
+    {
       path: "/sign-up",
       name: "sign up",
       component: Onboard,
@@ -36,6 +42,11 @@ const router = createRouter({
       component: NotFound,
     },
   ],
+});
+
+// Pages that know their own title (the reader) set it; everything else gets the default.
+router.afterEach((to) => {
+  if (to.name !== "read") document.title = "Novashelf";
 });
 
 export default router;

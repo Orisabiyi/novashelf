@@ -9,7 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.2.4",
+    "dompurify": "^3.4.16",
     "motion-v": "^2.2.1",
     "primeicons": "^7.0.0",
     "tailwindcss": "^4.2.4",

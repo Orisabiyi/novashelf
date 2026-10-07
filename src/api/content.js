@@ -39,6 +39,20 @@ export function getContent(id, options) {
 }
 
 /**
+ * @typedef {object} ReadableContent
+ * @property {ContentItem} item
+ * @property {string} html Sanitised article body.
+ * @property {string | null} byline
+ * @property {number} readingMinutes
+ * @property {boolean} extracted False when only the summary was available.
+ */
+
+/** @returns {Promise<ReadableContent>} */
+export function getReadable(id, options) {
+  return apiGet(`/content/${encodeURIComponent(id)}/read`, {}, options);
+}
+
+/**
  * @param {string | null} [date] yyyy-MM-dd; latest when omitted.
  * @returns {Promise<ContentItem>}
  */

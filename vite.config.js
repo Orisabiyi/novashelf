@@ -9,9 +9,10 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   plugins: [vue(), vueDevTools(), tailwindcss()],
   server: {
-    // The ASP.NET Core API (server/Novashelf.Api) runs on this port in development.
+    // The ASP.NET Core API (server/Novashelf.Api) runs on port 5088 in development.
+    // Set NOVASHELF_API_URL to point the dev server at another instance.
     proxy: {
-      "/api": "http://localhost:5088",
+      "/api": process.env.NOVASHELF_API_URL ?? "http://localhost:5088",
     },
   },
   resolve: {
