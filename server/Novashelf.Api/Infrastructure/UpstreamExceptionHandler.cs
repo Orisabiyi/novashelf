@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Xml;
 using Microsoft.AspNetCore.Diagnostics;
 using Polly;
 
@@ -14,7 +15,7 @@ public sealed class UpstreamExceptionHandler(IProblemDetailsService problemDetai
     public async ValueTask<bool> TryHandleAsync(HttpContext context, Exception exception, CancellationToken ct)
     {
         // ExecutionRejectedException covers resilience-pipeline timeouts and open circuit breakers.
-        var isUpstream = exception is HttpRequestException or JsonException or ExecutionRejectedException
+        var isUpstream = exception is HttpRequestException or JsonException or XmlException or ExecutionRejectedException
             || (exception is TaskCanceledException && !context.RequestAborted.IsCancellationRequested);
         if (!isUpstream) return false;
 
