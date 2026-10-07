@@ -81,14 +81,14 @@ onMounted(async () => {
             <ContentCardSkeleton
               v-for="n in COLUMN_SIZES[index]"
               :key="n"
-              compact />
+              variant="compact" />
           </template>
           <ContentCard
             v-for="article in column"
             v-else
             :key="article.id"
             :item="article"
-            compact />
+            variant="compact" />
         </div>
       </div>
     </div>

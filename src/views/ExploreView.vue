@@ -66,6 +66,14 @@ const isEmpty = computed(
   () => !loading.value && !error.value && !hasMore.value && items.value.length === 0,
 );
 
+// Rows on large screens pair a small card with a two-column feature card, alternating
+// sides: [small, feature], [feature, small], … Smaller screens show a plain grid.
+function variantAt(index) {
+  const row = Math.floor(index / 2);
+  const first = index % 2 === 0;
+  return (row % 2 === 0) !== first ? "feature" : "stacked";
+}
+
 const chipClass = (selected) =>
   `shrink-0 px-4 py-1 rounded-full border-2 font-medium transition-colors ${
     selected
@@ -134,14 +142,21 @@ const chipClass = (selected) =>
       <p class="text-lg">No articles on this topic yet. Try another one.</p>
     </div>
 
-    <div v-else class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div v-else class="grid gap-4 lg:gap-5 sm:grid-cols-2 lg:grid-cols-3">
       <template v-if="initialLoad">
-        <ContentCardSkeleton v-for="n in 6" :key="n" />
+        <ContentCardSkeleton v-for="n in 4" :key="n" :variant="variantAt(n - 1)" />
       </template>
       <template v-else>
-        <ContentCard v-for="item in items" :key="item.id" :item="item" />
+        <ContentCard
+          v-for="(item, index) in items"
+          :key="item.id"
+          :item="item"
+          :variant="variantAt(index)" />
         <template v-if="loading">
-          <ContentCardSkeleton v-for="n in 3" :key="`more-${n}`" />
+          <ContentCardSkeleton
+            v-for="n in 2"
+            :key="`more-${n}`"
+            :variant="variantAt(items.length + n - 1)" />
         </template>
       </template>
     </div>
