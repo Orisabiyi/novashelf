@@ -90,4 +90,15 @@ public class ApodMappingTests
     [InlineData("""{ "title": "t" }""")]
     public void Unexpected_shape_is_rejected(string json) =>
         Assert.Throws<JsonException>(() => MapJson(json));
+
+    [Theory]
+    [InlineData(
+        "<strong>Explanation:</strong> Light takes 30 million years to reach us. Your Sky Surprise: What picture did APOD feature on your birthday? (post 1995) Tomorrow's picture: a smile",
+        "Light takes 30 million years to reach us.")]
+    [InlineData(
+        "Explanation: The ring is 4 light-days across. Tomorrow’s picture: open space",
+        "The ring is 4 light-days across.")]
+    [InlineData("Explanation: Nothing to trim here.", "Nothing to trim here.")]
+    public void Explanation_loses_label_and_page_footer(string raw, string expected) =>
+        Assert.Equal(expected, ApodClient.CleanExplanation(raw));
 }

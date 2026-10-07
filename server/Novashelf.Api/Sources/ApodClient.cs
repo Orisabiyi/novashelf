@@ -74,11 +74,21 @@ public sealed partial class ApodClient(HttpClient http, IMemoryCache cache, Time
             Id: ContentId.ForApod(date),
             Kind: ContentKind.Apod,
             Title: WebUtility.HtmlDecode(a.Title).Trim(),
-            Summary: ExplanationLabel().Replace(HtmlToText(a.Explanation ?? ""), ""),
+            Summary: CleanExplanation(a.Explanation),
             ImageUrl: ResizedImage(a.Hdurl),
             Url: a.Permalink ?? a.Url,
             Publisher: string.IsNullOrEmpty(credit) ? "NASA APOD" : Truncate(credit, 120),
             PublishedAt: new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero));
+    }
+
+    /// <summary>
+    /// Plain text without the leading "Explanation:" label or the site's trailing navigation
+    /// lines ("Tomorrow's picture: …", "Your Sky Surprise: …"), which sometimes come along.
+    /// </summary>
+    internal static string CleanExplanation(string? html)
+    {
+        var text = ExplanationLabel().Replace(HtmlToText(html ?? ""), "");
+        return PageFooter().Replace(text, "").TrimEnd();
     }
 
     /// <summary>
@@ -120,6 +130,11 @@ public sealed partial class ApodClient(HttpClient http, IMemoryCache cache, Time
 
     [GeneratedRegex(@"^Explanation:\s*", RegexOptions.IgnoreCase)]
     private static partial Regex ExplanationLabel();
+
+    [GeneratedRegex(
+        @"\s*(?:Your Sky Surprise|Tomorrow[’']s picture|Explore Your Universe|Open Science|Almost Hyperspace|Follow APOD)\b[^:]{0,40}:.*$",
+        RegexOptions.IgnoreCase | RegexOptions.Singleline)]
+    private static partial Regex PageFooter();
 
     /// <summary>"Image Credit:", "Video Credit &amp; Copyright:", "Illustration Credit:" …</summary>
     [GeneratedRegex(@"^[\w\s&]*Credit[\w\s&]*:\s*", RegexOptions.IgnoreCase)]
