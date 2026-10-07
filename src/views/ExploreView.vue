@@ -78,7 +78,7 @@ const chipClass = (selected) =>
   `shrink-0 px-4 py-1 rounded-full border-2 font-medium transition-colors ${
     selected
       ? "bg-action border-action text-on-action"
-      : "border-line-strong hover:border-link hover:text-link"
+      : "bg-surface border-surface text-slate hover:border-link hover:text-link"
   }`;
 </script>
 

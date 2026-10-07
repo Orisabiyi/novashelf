@@ -64,7 +64,7 @@ const isCompact = computed(() => props.variant === "compact");
         isFeature && 'lg:justify-center lg:py-4 lg:pr-4',
       ]">
       <span
-        class="inline-flex items-center gap-1.5 rounded-full bg-slate/10 text-slate px-2.5 py-1 text-xs font-medium">
+        class="inline-flex items-center gap-1.5 rounded-full bg-slate text-on-slate px-2.5 py-1 text-xs font-medium">
         <i :class="`pi ${tag.icon}`" style="font-size: 0.75rem" aria-hidden="true"></i>
         {{ tag.label }}
       </span>

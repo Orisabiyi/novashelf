@@ -2,9 +2,10 @@
 @import "tailwindcss";
 
 /*
- * Novashelf palette: "Moonlight Grey" — warm greys and graphite ink, with Mars red as the
- * brand colour and slate as the quiet second colour. Use these tokens (bg-page, text-ink,
- * bg-action …) instead of Tailwind's stock grays so both themes stay consistent.
+ * Novashelf palette: "Moonlight Grey" — a warm grey page, white cards, graphite ink and a
+ * graphite navbar, with Mars red as the brand colour and slate as the second colour.
+ * Use these tokens (bg-page, text-ink, bg-action …) instead of Tailwind's stock grays so
+ * both themes stay consistent.
  *
  * Red has three jobs, because #d85357 is too light for small text and buttons (3.6:1):
  *   brand     logo, display headlines, icons (large: passes at 3:1)
@@ -17,15 +18,21 @@
   --color-on-action: #ffffff;
   --color-link: #c13f45;
 
-  --color-page: #f5f4f2;
+  --color-page: #ebe8e4;
   --color-surface: #ffffff;
-  --color-nav: #ecebe8;
   --color-ink: #1f1d1c;
-  --color-muted: #66615d;
+  --color-muted: #5c5753;
   --color-line: #e3e0dc;
   --color-line-strong: #d2cdc8;
-  --color-subtle: #ebe8e5;
+  --color-subtle: #efece8;
   --color-slate: #4a5568;
+  --color-on-slate: #ffffff;
+
+  /* The navbar is a dark graphite band in both themes. */
+  --color-nav: #1f1d1c;
+  --color-on-nav: #efedea;
+  --color-on-nav-muted: #b5afaa;
+  --color-nav-link: #e8787b;
 }
 
 /* Dark theme: set data-theme="dark" on <html> (wired up with reader preferences). */
@@ -36,13 +43,15 @@
 
   --color-page: #171615;
   --color-surface: #22201f;
-  --color-nav: #1c1b1a;
   --color-ink: #efedea;
   --color-muted: #a8a29d;
   --color-line: #2d2a28;
   --color-line-strong: #3b3836;
   --color-subtle: #2a2725;
   --color-slate: #cbd5e1;
+  --color-on-slate: #171615;
+
+  --color-nav: #0e0d0d;
 
   color-scheme: dark;
 }

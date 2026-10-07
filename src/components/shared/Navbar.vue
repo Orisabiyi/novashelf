@@ -21,7 +21,7 @@ watch(
 </script>
 
 <template>
-  <nav class="sticky top-0 z-10 bg-nav px-6 py-4 lg:px-10 2xl:px-48">
+  <nav class="sticky top-0 z-10 bg-nav text-on-nav px-6 py-4 lg:px-10 2xl:px-48">
     <div class="flex items-center">
       <RouterLink to="/" class="flex items-center gap-2">
         <figure class="w-14 lg:w-20 h-auto flex items-center justify-center">
@@ -37,8 +37,8 @@ watch(
         <li v-for="navLink in navLinks" :key="navLink.path">
           <RouterLink
             :to="navLink.path"
-            class="font-medium hover:text-link"
-            active-class="text-link"
+            class="font-medium text-on-nav-muted hover:text-on-nav"
+            active-class="!text-nav-link"
             >{{ navLink.name }}</RouterLink
           >
         </li>
@@ -71,8 +71,8 @@ watch(
       <li v-for="navLink in navLinks" :key="navLink.path">
         <RouterLink
           :to="navLink.path"
-          class="font-medium"
-          active-class="text-link"
+          class="font-medium text-on-nav-muted"
+          active-class="!text-nav-link"
           >{{ navLink.name }}</RouterLink
         >
       </li>
