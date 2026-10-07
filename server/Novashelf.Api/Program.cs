@@ -42,10 +42,11 @@ builder.Services.AddHttpClient<NasaImagesClient>(c =>
 builder.Services.AddScoped<ContentResolver>();
 
 // Fetches original article pages. No retries (a slow site shouldn't hold the reader up), a
-// tight timeout, and a handler that refuses to connect to private or internal addresses.
+// timeout, and a handler that refuses to connect to private or internal addresses.
 builder.Services.AddHttpClient<ReaderService>(c =>
 {
-    c.Timeout = TimeSpan.FromSeconds(12);
+    // Generous: some publishers (science.nasa.gov) take 10–20s, and each article is fetched once.
+    c.Timeout = TimeSpan.FromSeconds(25);
     c.DefaultRequestHeaders.UserAgent.ParseAdd($"Mozilla/5.0 (compatible; {userAgent})");
 }).ConfigurePrimaryHttpMessageHandler(OutboundGuard.CreateHandler);
 
