@@ -1,7 +1,9 @@
 <script setup>
 import { computed, ref } from "vue";
 import { RouterLink } from "vue-router";
+import { prefetchReadable, rememberPreview } from "@/api/readerCache";
 import { formatRelativeDate } from "@/utils/format";
+import { imageAt, imageSrcset } from "@/utils/images";
 import { itemTag } from "@/utils/topics";
 
 const props = defineProps({
@@ -23,6 +25,24 @@ const props = defineProps({
 });
 
 const imageFailed = ref(false);
+const imageEl = ref(null);
+
+const CARD_WIDTHS = [320, 480, 640, 960, 1280];
+// Roughly the rendered width: one grid column (a feature image is half of two columns).
+const imageSizes = computed(() =>
+  props.variant === "compact"
+    ? "256px"
+    : "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw",
+);
+
+// Hover, focus or touch signals intent: start loading the article before the click.
+function onIntent() {
+  prefetchReadable(props.item, imageEl.value?.currentSrc);
+}
+
+function onOpen() {
+  rememberPreview(props.item, imageEl.value?.currentSrc);
+}
 const hasImage = computed(() => props.item.imageUrl && !imageFailed.value);
 const tag = computed(() => itemTag(props.item));
 
@@ -39,6 +59,10 @@ const isCompact = computed(() => props.variant === "compact");
 <template>
   <RouterLink
     :to="`/read/${item.id}`"
+    @pointerenter="onIntent"
+    @focus="onIntent"
+    @touchstart.passive="onIntent"
+    @click="onOpen"
     :class="[
       'group h-full flex flex-col gap-4 bg-surface rounded-2xl p-3 transition-colors hover:bg-surface/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link',
       isFeature && hasImage && 'lg:col-span-2 lg:grid lg:grid-cols-2 lg:gap-6',
@@ -51,9 +75,13 @@ const isCompact = computed(() => props.variant === "compact");
         isFeature ? 'aspect-video lg:aspect-auto lg:h-full lg:min-h-72' : 'aspect-video',
       ]">
       <img
-        :src="item.imageUrl"
+        ref="imageEl"
+        :src="imageAt(item.imageUrl, 640)"
+        :srcset="imageSrcset(item.imageUrl, CARD_WIDTHS)"
+        :sizes="imageSizes"
         alt=""
         loading="lazy"
+        decoding="async"
         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         @error="imageFailed = true" />
     </figure>

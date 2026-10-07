@@ -2,10 +2,11 @@
 import { computed, ref, watch } from "vue";
 import { RouterLink, useRoute, useRouter } from "vue-router";
 import DOMPurify from "dompurify";
-import { getReadable } from "@/api/content";
+import { READER_HERO_WIDTH, getPreview, loadReadable } from "@/api/readerCache";
 import ReaderSettings from "@/components/reader/ReaderSettings.vue";
 import { FONT_SIZES, WIDTHS, useReaderPreferences } from "@/composables/useReaderPreferences";
 import { formatLongDate, formatRelativeDate } from "@/utils/format";
+import { imageAt, originalSource } from "@/utils/images";
 import { itemTag } from "@/utils/topics";
 
 const route = useRoute();
@@ -21,70 +22,92 @@ const proseSize = computed(
 
 /** @type {import("vue").Ref<import("@/api/content").ReadableContent | null>} */
 const readable = ref(null);
+/** What the card we came from already knew: lets the headline and picture show at once. */
+const preview = ref(null);
 const loading = ref(true);
 /** @type {import("vue").Ref<import("@/api/client").ApiError | null>} */
 const error = ref(null);
 const heroFailed = ref(false);
-// Pictures keep their natural shape, so until one loads it has no height. Hold its space.
 const heroLoaded = ref(false);
 
-let controller = null;
+let currentId = null;
 
 async function load(id) {
-  controller?.abort();
-  const current = new AbortController();
-  controller = current;
-
+  currentId = id;
+  preview.value = getPreview(id);
+  readable.value = null;
   loading.value = true;
   error.value = null;
-  readable.value = null;
   heroFailed.value = false;
   heroLoaded.value = false;
+  if (preview.value) document.title = `${preview.value.item.title} · Novashelf`;
 
   try {
-    readable.value = await getReadable(id, { signal: current.signal });
-    document.title = `${readable.value.item.title} · Novashelf`;
+    // Usually already in flight (or done) from hovering the card.
+    const result = await loadReadable(id);
+    if (currentId !== id) return;
+    readable.value = result;
+    document.title = `${result.item.title} · Novashelf`;
   } catch (e) {
-    if (e.name !== "AbortError") error.value = e;
+    if (currentId === id) error.value = e;
   } finally {
-    if (controller === current) loading.value = false;
+    if (currentId === id) loading.value = false;
   }
 }
 
 watch(() => route.params.id, (id) => id && load(String(id)), { immediate: true });
 
-const item = computed(() => readable.value?.item ?? null);
+const item = computed(() => readable.value?.item ?? preview.value?.item ?? null);
 const tag = computed(() => (item.value ? itemTag(item.value) : null));
 const isPicture = computed(() => item.value && item.value.kind !== "article");
 
-// The server already sanitises; this is a second, independent layer before v-html.
-const safeHtml = computed(() =>
-  readable.value
-    ? DOMPurify.sanitize(readable.value.html, {
-        ADD_ATTR: ["target", "loading", "decoding", "referrerpolicy"],
-      })
-    : "",
-);
+const showHero = computed(() => !!item.value?.imageUrl && !heroFailed.value);
+const heroSrc = computed(() => imageAt(item.value?.imageUrl, READER_HERO_WIDTH));
+// Shown blurred until the sharp hero arrives: the card's own image is already in the browser
+// cache, so this appears instantly. Without one, a tiny copy loads almost as fast.
+const placeholderSrc = computed(() => preview.value?.imageSrc || imageAt(item.value?.imageUrl, 320));
 
-// Skip the hero when the article body already opens with the same picture.
-const showHero = computed(() => {
-  const url = item.value?.imageUrl;
-  if (!url || heroFailed.value) return false;
-  const file = url.split("?")[0].split("/").pop();
-  return !(file && safeHtml.value.slice(0, 2000).includes(file));
+// The server already sanitises; this is a second, independent layer before v-html.
+const safeHtml = computed(() => {
+  if (!readable.value) return "";
+  const fragment = DOMPurify.sanitize(readable.value.html, {
+    ADD_ATTR: ["target", "loading", "decoding", "referrerpolicy", "srcset", "sizes"],
+    RETURN_DOM_FRAGMENT: true,
+  });
+  removeDuplicateOfHero(fragment);
+  const container = document.createElement("div");
+  container.append(fragment);
+  return container.innerHTML;
 });
 
+/** Articles often open with the same photo as the card. Keep the hero, drop the repeat. */
+function removeDuplicateOfHero(fragment) {
+  const source = originalSource(item.value?.imageUrl);
+  const file = source?.split("?")[0].split("/").pop();
+  if (!file) return;
+
+  for (const image of [...fragment.querySelectorAll("img")].slice(0, 3)) {
+    const imageSource = originalSource(image.getAttribute("src")) ?? image.getAttribute("src") ?? "";
+    if (imageSource.split("?")[0].split("/").pop() === file) {
+      const figure = image.closest("figure");
+      if (figure && !figure.querySelector("figcaption")) figure.remove();
+      else image.remove();
+      return;
+    }
+  }
+}
+
 const meta = computed(() => {
-  if (!readable.value) return [];
-  const { item, byline, readingMinutes } = readable.value;
-  const date = item.kind === "article"
-    ? formatRelativeDate(item.publishedAt)
-    : formatLongDate(item.publishedAt);
+  if (!item.value) return [];
+  const byline = readable.value?.byline;
+  const date = item.value.kind === "article"
+    ? formatRelativeDate(item.value.publishedAt)
+    : formatLongDate(item.value.publishedAt);
   return [
-    byline && byline !== item.publisher ? byline : null,
-    item.publisher,
+    byline && byline !== item.value.publisher ? byline : null,
+    item.value.publisher,
     date,
-    `${readingMinutes} min read`,
+    readable.value ? `${readable.value.readingMinutes} min read` : null,
   ].filter(Boolean);
 });
 
@@ -109,23 +132,9 @@ function goBack() {
         <ReaderSettings />
       </div>
 
-      <!-- Loading -->
-      <div v-if="loading" class="space-y-6 animate-pulse" aria-busy="true" aria-label="Loading article">
-        <div class="h-6 w-28 rounded-full bg-surface"></div>
-        <div class="space-y-3">
-          <div class="h-10 w-full rounded bg-surface"></div>
-          <div class="h-10 w-3/4 rounded bg-surface"></div>
-        </div>
-        <div class="h-4 w-1/2 rounded bg-surface"></div>
-        <div class="aspect-video rounded-2xl bg-surface"></div>
-        <div class="space-y-3">
-          <div v-for="n in 6" :key="n" class="h-4 rounded bg-surface" :class="n === 6 ? 'w-2/3' : 'w-full'"></div>
-        </div>
-      </div>
-
       <!-- Error -->
       <div
-        v-else-if="error"
+        v-if="error"
         role="alert"
         class="flex flex-col items-center gap-4 py-20 text-center">
         <i class="pi pi-exclamation-circle text-brand" style="font-size: 2.5rem" aria-hidden="true"></i>
@@ -151,8 +160,22 @@ function goBack() {
         </div>
       </div>
 
+      <!-- Loading -->
+      <div v-else-if="!item" class="space-y-6 animate-pulse" aria-busy="true" aria-label="Loading article">
+        <div class="h-6 w-28 rounded-full bg-surface"></div>
+        <div class="space-y-3">
+          <div class="h-10 w-full rounded bg-surface"></div>
+          <div class="h-10 w-3/4 rounded bg-surface"></div>
+        </div>
+        <div class="h-4 w-1/2 rounded bg-surface"></div>
+        <div class="aspect-video rounded-2xl bg-surface"></div>
+        <div class="space-y-3">
+          <div v-for="n in 6" :key="n" class="h-4 rounded bg-surface" :class="n === 6 ? 'w-2/3' : 'w-full'"></div>
+        </div>
+      </div>
+
       <!-- Article -->
-      <template v-else-if="readable && item">
+      <template v-else>
         <header class="space-y-5">
           <span
             v-if="tag"
@@ -174,25 +197,48 @@ function goBack() {
           </p>
         </header>
 
-        <figure v-if="showHero" :class="isPicture ? 'my-8 -mx-6 sm:mx-0' : 'my-8'">
+        <figure
+          v-if="showHero"
+          :class="[
+            'relative my-8 overflow-hidden bg-surface',
+            isPicture ? '-mx-6 sm:mx-0 sm:rounded-2xl' : 'aspect-video rounded-2xl',
+            isPicture && !heroLoaded && 'aspect-[4/3]',
+          ]">
           <img
-            :src="item.imageUrl"
+            v-if="placeholderSrc"
+            :src="placeholderSrc"
+            alt=""
+            aria-hidden="true"
+            class="absolute inset-0 size-full scale-110 object-cover blur-2xl opacity-70" />
+          <img
+            :src="heroSrc"
             :alt="isPicture ? item.title : ''"
-            referrerpolicy="no-referrer"
+            fetchpriority="high"
             :class="[
-              'w-full bg-surface sm:rounded-2xl',
+              'transition-opacity duration-500',
+              heroLoaded ? 'opacity-100' : 'opacity-0',
               isPicture
-                ? heroLoaded
-                  ? 'max-h-[80vh] object-contain'
-                  : 'aspect-[4/3] animate-pulse'
-                : 'aspect-video object-cover rounded-2xl',
+                ? 'relative mx-auto max-h-[80vh] w-full object-contain'
+                : 'absolute inset-0 size-full object-cover',
             ]"
             @load="heroLoaded = true"
             @error="heroFailed = true" />
         </figure>
 
         <div
-          v-if="!readable.extracted"
+          v-if="!readable"
+          class="mt-8 space-y-3 animate-pulse"
+          aria-busy="true"
+          aria-label="Loading article">
+          <div
+            v-for="n in 8"
+            :key="n"
+            class="h-4 rounded bg-surface"
+            :class="n % 4 === 0 ? 'w-2/3' : 'w-full'"></div>
+        </div>
+
+        <div
+          v-else-if="!readable.extracted"
           class="my-8 flex flex-col gap-3 rounded-2xl border border-line-strong bg-surface p-5 sm:flex-row sm:items-center">
           <i class="pi pi-info-circle text-link" aria-hidden="true"></i>
           <p class="flex-1 text-sm">
@@ -211,12 +257,13 @@ function goBack() {
         </div>
 
         <div
+          v-if="readable"
           :class="proseSize"
           class="prose max-w-none mt-8 prose-headings:font-display prose-img:rounded-xl prose-a:underline-offset-2 prose-figcaption:text-sm"
           v-html="safeHtml"></div>
 
         <footer
-          v-if="item.url"
+          v-if="readable && item.url"
           class="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-line pt-6 text-sm text-muted">
           <span>Originally published by {{ item.publisher || "its source" }}</span>
           <a
