@@ -1,0 +1,52 @@
+import { apiGet } from "@/api/client";
+
+/**
+ * @typedef {object} ContentItem
+ * @property {string} id Source-prefixed id: "sfn-…", "apod-yyyy-MM-dd", "img-…".
+ * @property {"article" | "apod" | "image"} kind
+ * @property {string} title
+ * @property {string} summary
+ * @property {string | null} imageUrl
+ * @property {string | null} url Link to the original.
+ * @property {string | null} publisher
+ * @property {string | null} publishedAt ISO 8601.
+ */
+
+/**
+ * @template T
+ * @typedef {object} PagedResult
+ * @property {T[]} items
+ * @property {number} page
+ * @property {boolean} hasMore
+ */
+
+/** @returns {Promise<{ slug: string, name: string }[]>} */
+export function getTopics(options) {
+  return apiGet("/topics", {}, options);
+}
+
+/**
+ * @param {{ topic?: string | null, page?: number }} query
+ * @returns {Promise<PagedResult<ContentItem>>}
+ */
+export function getFeed({ topic = null, page = 1 } = {}, options) {
+  return apiGet("/feed", { topic, page }, options);
+}
+
+/** @returns {Promise<ContentItem>} */
+export function getContent(id, options) {
+  return apiGet(`/content/${encodeURIComponent(id)}`, {}, options);
+}
+
+/**
+ * @param {string | null} [date] yyyy-MM-dd; latest when omitted.
+ * @returns {Promise<ContentItem>}
+ */
+export function getApod(date = null, options) {
+  return apiGet("/apod", { date }, options);
+}
+
+/** @returns {Promise<PagedResult<ContentItem>>} */
+export function searchImages({ q, page = 1 }, options) {
+  return apiGet("/images", { q, page }, options);
+}
