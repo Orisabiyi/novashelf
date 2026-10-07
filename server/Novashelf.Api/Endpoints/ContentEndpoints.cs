@@ -1,6 +1,7 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Novashelf.Api.Models;
+using Novashelf.Api.Reading;
 using Novashelf.Api.Sources;
 
 namespace Novashelf.Api.Endpoints;
@@ -19,6 +20,7 @@ public static class ContentEndpoints
 
         api.MapGet("/feed", GetFeed);
         api.MapGet("/content/{id}", GetContent);
+        api.MapGet("/content/{id}/read", ReadContent);
         api.MapGet("/apod", GetApod);
         api.MapGet("/images", SearchImages);
 
@@ -46,6 +48,13 @@ public static class ContentEndpoints
     {
         var item = await resolver.GetAsync(id, ct);
         return item is null ? TypedResults.NotFound() : TypedResults.Ok(item);
+    }
+
+    private static async Task<Results<Ok<ReadableContent>, NotFound>> ReadContent(
+        string id, ReaderService reader, CancellationToken ct)
+    {
+        var readable = await reader.GetAsync(id, ct);
+        return readable is null ? TypedResults.NotFound() : TypedResults.Ok(readable);
     }
 
     private static async Task<Results<Ok<ContentItem>, NotFound, ProblemHttpResult>> GetApod(

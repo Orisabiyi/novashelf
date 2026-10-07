@@ -1,8 +1,13 @@
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Novashelf.Api.Endpoints;
 using Novashelf.Api.Infrastructure;
+using Novashelf.Api.Reading;
 using Novashelf.Api.Sources;
+
+// Article pages may use legacy encodings such as windows-1252.
+Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +40,14 @@ builder.Services.AddHttpClient<NasaImagesClient>(c =>
 }).AddStandardResilienceHandler();
 
 builder.Services.AddScoped<ContentResolver>();
+
+// Fetches original article pages. No retries (a slow site shouldn't hold the reader up), a
+// tight timeout, and a handler that refuses to connect to private or internal addresses.
+builder.Services.AddHttpClient<ReaderService>(c =>
+{
+    c.Timeout = TimeSpan.FromSeconds(12);
+    c.DefaultRequestHeaders.UserAgent.ParseAdd($"Mozilla/5.0 (compatible; {userAgent})");
+}).ConfigurePrimaryHttpMessageHandler(OutboundGuard.CreateHandler);
 
 var app = builder.Build();
 
