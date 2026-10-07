@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Novashelf.Api.Endpoints;
+using Novashelf.Api.Images;
 using Novashelf.Api.Infrastructure;
 using Novashelf.Api.Reading;
 using Novashelf.Api.Sources;
@@ -41,6 +42,16 @@ builder.Services.AddHttpClient<NasaImagesClient>(c =>
 
 builder.Services.AddScoped<ContentResolver>();
 
+builder.Services.AddSingleton<ImageUrlSigner>();
+// Image originals can be large and slow (NASA's take minutes on slow links), hence the long timeout.
+builder.Services.AddHttpClient(ImageService.HttpClientName, c =>
+{
+    c.Timeout = TimeSpan.FromSeconds(90);
+    c.DefaultRequestHeaders.UserAgent.ParseAdd($"Mozilla/5.0 (compatible; {userAgent})");
+}).ConfigurePrimaryHttpMessageHandler(OutboundGuard.CreateHandler);
+// A singleton so the image cache and in-flight de-duplication are shared across requests.
+builder.Services.AddSingleton<ImageService>();
+
 // Fetches original article pages. No retries (a slow site shouldn't hold the reader up), a
 // timeout, and a handler that refuses to connect to private or internal addresses.
 builder.Services.AddHttpClient<ReaderService>(c =>
@@ -56,5 +67,6 @@ app.UseExceptionHandler();
 app.UseStatusCodePages();
 
 app.MapContentEndpoints();
+app.MapImageEndpoints();
 
 app.Run();

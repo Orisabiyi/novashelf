@@ -1,7 +1,9 @@
+using System.Collections.Concurrent;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.Extensions.Caching.Memory;
+using Novashelf.Api.Images;
 using Novashelf.Api.Models;
 using Novashelf.Api.Sources;
 using ReadabilityParser = SmartReader.Reader;
@@ -28,6 +30,7 @@ public sealed record ReadableContent(
 public sealed class ReaderService(
     HttpClient http,
     ContentResolver resolver,
+    ImageUrlSigner images,
     IMemoryCache cache,
     ILogger<ReaderService> logger)
 {
@@ -38,23 +41,70 @@ public sealed class ReaderService(
     private static readonly TimeSpan ExtractedTtl = TimeSpan.FromHours(12);
     private static readonly TimeSpan FallbackTtl = TimeSpan.FromMinutes(15);
 
+    // Shared across instances (the service is transient): one extraction per article at a time,
+    // whether a reader or background warming asked for it first.
+    private static readonly ConcurrentDictionary<string, Lazy<Task<ReadableContent>>> InFlight = new();
+    private static readonly SemaphoreSlim WarmingSlots = new(2);
+
     /// <summary>Returns null when the id doesn't exist.</summary>
     public async Task<ReadableContent?> GetAsync(string id, CancellationToken ct)
     {
         var item = await resolver.GetAsync(id, ct);
         if (item is null) return null;
-
-        if (item.Kind != ContentKind.Article || item.Url is null)
-            return FromSummary(item, extracted: true);
-
-        return await cache.GetOrCreateAsync($"reader:{item.Id}", async entry =>
-        {
-            var extracted = await ExtractAsync(item, ct);
-            // Retry failed extractions sooner: the site may have been briefly down.
-            entry.AbsoluteExpirationRelativeToNow = extracted is null ? FallbackTtl : ExtractedTtl;
-            return extracted ?? FromSummary(item, extracted: false);
-        });
+        return await GetForItemAsync(item).WaitAsync(ct);
     }
+
+    /// <summary>
+    /// Extracts articles in the background (e.g. the top of a feed page as it's served), so the
+    /// reader usually finds them ready. Publishers can take 10–20s to serve a page.
+    /// </summary>
+    public void Warm(IEnumerable<ContentItem> items)
+    {
+        foreach (var item in items.Where(i => i.Kind == ContentKind.Article && i.Url is not null))
+        {
+            if (cache.TryGetValue(CacheKey(item.Id), out _) || InFlight.ContainsKey(item.Id)) continue;
+            _ = Task.Run(async () =>
+            {
+                await WarmingSlots.WaitAsync();
+                try
+                {
+                    await GetForItemAsync(item);
+                }
+                finally
+                {
+                    WarmingSlots.Release();
+                }
+            });
+        }
+    }
+
+    private Task<ReadableContent> GetForItemAsync(ContentItem item)
+    {
+        if (item.Kind != ContentKind.Article || item.Url is null)
+            return Task.FromResult(FromSummary(item, extracted: true));
+
+        if (cache.TryGetValue(CacheKey(item.Id), out ReadableContent? cached)) return Task.FromResult(cached!);
+
+        // Not tied to any one request: if the first reader leaves, the work still finishes for the next.
+        var work = InFlight.GetOrAdd(item.Id, key => new Lazy<Task<ReadableContent>>(async () =>
+        {
+            try
+            {
+                var extracted = await ExtractAsync(item, CancellationToken.None);
+                var readable = extracted ?? FromSummary(item, extracted: false);
+                // Retry failed extractions sooner: the site may have been briefly down.
+                cache.Set(CacheKey(item.Id), readable, extracted is null ? FallbackTtl : ExtractedTtl);
+                return readable;
+            }
+            finally
+            {
+                InFlight.TryRemove(item.Id, out _);
+            }
+        }));
+        return work.Value;
+    }
+
+    private static string CacheKey(string id) => $"reader:{id}";
 
     private async Task<ReadableContent?> ExtractAsync(ContentItem item, CancellationToken ct)
     {
@@ -86,7 +136,7 @@ public sealed class ReaderService(
             var article = new ReadabilityParser(pageUrl, html).GetArticle();
             if (!article.IsReadable || string.IsNullOrWhiteSpace(article.Content)) return null;
 
-            var body = ArticleSanitizer.Sanitize(article.Content, pageUrl);
+            var body = ArticleImages.Rewrite(ArticleSanitizer.Sanitize(article.Content, pageUrl), images);
             if ((article.TextContent?.Trim().Length ?? 0) < MinArticleTextLength) return null;
 
             var minutes = (int)Math.Round(article.TimeToRead.TotalMinutes);

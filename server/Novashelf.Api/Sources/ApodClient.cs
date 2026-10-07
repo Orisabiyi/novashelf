@@ -107,7 +107,9 @@ public sealed partial class ApodClient(HttpClient http, IMemoryCache cache, Time
         if (path.StartsWith("/content/dam/", StringComparison.Ordinal))
             path = "/dynamicimage/assets/" + path["/content/dam/".Length..];
 
-        return $"https://assets.science.nasa.gov{path}?w=1600&fit=clip";
+        // No size parameters: NASA's on-demand resizer can take tens of seconds on a cold cache,
+        // while the standard rendition comes back quickly. Our image proxy resizes it.
+        return $"https://assets.science.nasa.gov{path}";
     }
 
     private static string HtmlToText(string html)

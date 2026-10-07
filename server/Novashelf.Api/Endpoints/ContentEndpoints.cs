@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Novashelf.Api.Images;
 using Novashelf.Api.Models;
 using Novashelf.Api.Reading;
 using Novashelf.Api.Sources;
@@ -9,6 +10,12 @@ namespace Novashelf.Api.Endpoints;
 public static class ContentEndpoints
 {
     private const int MaxPage = 500;
+
+    // Image widths the front end asks for first; warming these makes first paint fast.
+    private const int CardImageWidth = 640;
+    private const int FeaturedImageWidth = 960;
+    private const int ReaderHeroWidth = 1280;
+    private const int ArticlesWarmedPerPage = 6;
 
     public static IEndpointRouteBuilder MapContentEndpoints(this IEndpointRouteBuilder app)
     {
@@ -28,7 +35,8 @@ public static class ContentEndpoints
     }
 
     private static async Task<Results<Ok<PagedResult<ContentItem>>, ProblemHttpResult>> GetFeed(
-        SpaceflightNewsClient articles, CancellationToken ct, string? topic = null, int page = 1)
+        SpaceflightNewsClient articles, ImageUrlSigner images, ImageService imageCache, ReaderService reader,
+        CancellationToken ct, string? topic = null, int page = 1)
     {
         if (page is < 1 or > MaxPage) return BadRequest($"page must be between 1 and {MaxPage}");
 
@@ -40,47 +48,56 @@ public static class ContentEndpoints
             keywords = match.Keywords.ToList();
         }
 
-        return TypedResults.Ok(await articles.GetArticlesAsync(keywords, page, ct));
+        var feed = await articles.GetArticlesAsync(keywords, page, ct);
+        imageCache.Warm(feed.Items.Select(i => i.ImageUrl), CardImageWidth);
+        // The first cards on a page are the likeliest to be opened: have them ready.
+        reader.Warm(feed.Items.Take(ArticlesWarmedPerPage));
+        return TypedResults.Ok(images.Proxied(feed));
     }
 
     private static async Task<Results<Ok<ContentItem>, NotFound>> GetContent(
-        string id, ContentResolver resolver, CancellationToken ct)
+        string id, ContentResolver resolver, ImageUrlSigner images, CancellationToken ct)
     {
         var item = await resolver.GetAsync(id, ct);
-        return item is null ? TypedResults.NotFound() : TypedResults.Ok(item);
+        return item is null ? TypedResults.NotFound() : TypedResults.Ok(images.Proxied(item));
     }
 
     private static async Task<Results<Ok<ReadableContent>, NotFound>> ReadContent(
-        string id, ReaderService reader, CancellationToken ct)
+        string id, ReaderService reader, ImageUrlSigner images, ImageService imageCache, CancellationToken ct)
     {
         var readable = await reader.GetAsync(id, ct);
-        return readable is null ? TypedResults.NotFound() : TypedResults.Ok(readable);
+        if (readable is not null) imageCache.Warm([readable.Item.ImageUrl], ReaderHeroWidth);
+        // Article images are already proxied by the reader; this covers the hero image.
+        return readable is null
+            ? TypedResults.NotFound()
+            : TypedResults.Ok(readable with { Item = images.Proxied(readable.Item) });
     }
 
     private static async Task<Results<Ok<ContentItem>, NotFound, ProblemHttpResult>> GetApod(
-        ApodClient apod, CancellationToken ct, string? date = null)
+        ApodClient apod, ImageUrlSigner images, ImageService imageCache, CancellationToken ct, string? date = null)
     {
         if (date is null)
         {
             var latest = await apod.GetLatestAsync(ct);
-            return latest is null ? TypedResults.NotFound() : TypedResults.Ok(latest);
+            if (latest is not null) imageCache.Warm([latest.ImageUrl], FeaturedImageWidth);
+            return latest is null ? TypedResults.NotFound() : TypedResults.Ok(images.Proxied(latest));
         }
 
         if (!DateOnly.TryParseExact(date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
             return BadRequest("date must be in yyyy-MM-dd format");
 
         var item = await apod.GetAsync(parsed, ct);
-        return item is null ? TypedResults.NotFound() : TypedResults.Ok(item);
+        return item is null ? TypedResults.NotFound() : TypedResults.Ok(images.Proxied(item));
     }
 
     private static async Task<Results<Ok<PagedResult<ContentItem>>, ProblemHttpResult>> SearchImages(
-        NasaImagesClient images, CancellationToken ct, string? q = null, int page = 1)
+        NasaImagesClient library, ImageUrlSigner images, CancellationToken ct, string? q = null, int page = 1)
     {
         if (string.IsNullOrWhiteSpace(q) || q.Length > 100) return BadRequest("q is required (max 100 characters)");
         // The NASA API caps results at 10,000 hits.
         if (page is < 1 or > 10_000 / NasaImagesClient.PageSize) return BadRequest("page is out of range");
 
-        return TypedResults.Ok(await images.SearchAsync(q, page, ct));
+        return TypedResults.Ok(images.Proxied(await library.SearchAsync(q, page, ct)));
     }
 
     private static ProblemHttpResult BadRequest(string detail) =>
