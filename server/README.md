@@ -16,6 +16,12 @@ in memory:
 
 No database, Docker or API keys are needed yet.
 
+### Configuration
+
+| Setting | Purpose |
+|---|---|
+| `Images:SigningKey` | Secret used to sign `/api/img` URLs. Optional in development (a random key is generated per run, so image URLs from before a restart stop working until the page reloads). **Set it in production**, e.g. `dotnet user-secrets set "Images:SigningKey" "<long random string>"` locally or an app secret in Azure.
+
 ## Run
 
 From the repository root:
@@ -63,6 +69,8 @@ dotnet test server
 | `GET /api/content/{id}` | One item by id (`sfn-…`, `apod-yyyy-MM-dd`, `img-…`) |
 | `GET /api/apod?date=yyyy-MM-dd` | Picture of the day; latest when `date` is omitted |
 | `GET /api/images?q=&page=` | NASA image search, 24 per page |
+| `GET /api/content/{id}/read` | Reader view: item, clean article HTML, byline, reading time, `extracted` |
+| `GET /api/img?src=&sig=&w=` | Resized WebP copy of a signed image URL (as returned in `imageUrl`); `w` snaps to 320–2048 |
 
 Errors use [ProblemDetails](https://www.rfc-editor.org/rfc/rfc9457). Invalid input returns `400`,
 unknown content `404`, and an unreachable upstream source `502`.
