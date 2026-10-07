@@ -30,7 +30,7 @@ const features = [
       <li v-for="feature in features" class="flex items-center gap-2 text-lg">
         <figure>
           <i
-            :class="`${feature.icon} text-base-red`"
+            :class="`${feature.icon} text-brand`"
             style="font-size: 2rem"></i>
         </figure>
 

@@ -1,10 +1,54 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap");
 @import "tailwindcss";
 
+/*
+ * Novashelf palette: "Moonlight Grey" — warm greys and graphite ink, with Mars red as the
+ * brand colour and slate as the quiet second colour. Use these tokens (bg-page, text-ink,
+ * bg-action …) instead of Tailwind's stock grays so both themes stay consistent.
+ *
+ * Red has three jobs, because #d85357 is too light for small text and buttons (3.6:1):
+ *   brand     logo, display headlines, icons (large: passes at 3:1)
+ *   action    button fills; pair with text-on-action (5.2:1 light, 4.6:1 dark)
+ *   link      small red text, links, active/hover states (5.2:1 light, 5.7:1 dark)
+ */
 @theme {
-  --color-base-red: #d85357;
+  --color-brand: #d85357;
+  --color-action: #c13f45;
+  --color-on-action: #ffffff;
+  --color-link: #c13f45;
+
+  --color-page: #f5f4f2;
+  --color-surface: #ffffff;
+  --color-nav: #ecebe8;
+  --color-ink: #1f1d1c;
+  --color-muted: #66615d;
+  --color-line: #e3e0dc;
+  --color-line-strong: #d2cdc8;
+  --color-subtle: #ebe8e5;
+  --color-slate: #4a5568;
+}
+
+/* Dark theme: set data-theme="dark" on <html> (wired up with reader preferences). */
+:root[data-theme="dark"] {
+  --color-action: #d85357;
+  --color-on-action: #171615;
+  --color-link: #e8787b;
+
+  --color-page: #171615;
+  --color-surface: #22201f;
+  --color-nav: #1c1b1a;
+  --color-ink: #efedea;
+  --color-muted: #a8a29d;
+  --color-line: #2d2a28;
+  --color-line-strong: #3b3836;
+  --color-subtle: #2a2725;
+  --color-slate: #cbd5e1;
+
+  color-scheme: dark;
 }
 
 body {
   font-family: "DM Sans", sans-serif;
+  background-color: var(--color-page);
+  color: var(--color-ink);
 }

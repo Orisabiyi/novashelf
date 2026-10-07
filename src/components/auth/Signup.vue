@@ -44,7 +44,7 @@ function handleSubmit() {
 
 <template>
   <div
-    class="border-2 border-gray-300 rounded-xl h-[500px] p-8 w-1/3 flex flex-col items-center gap-4 text-center">
+    class="border-2 border-line-strong rounded-xl h-[500px] p-8 w-1/3 flex flex-col items-center gap-4 text-center">
     <figure class="w-20 h-auto">
       <img :src="logoImg" alt="" class="w-full h-full inline-block" />
     </figure>
@@ -63,33 +63,33 @@ function handleSubmit() {
         type="email"
         placeholder="Email"
         v-model="email"
-        :class="`border-2 border-gray-300 rounded-sm p-2 focus:outline-none ${step === 1 ? 'block' : 'hidden'}`" />
+        :class="`border-2 border-line-strong rounded-sm p-2 focus:outline-none ${step === 1 ? 'block' : 'hidden'}`" />
 
       <input
         type="password"
         placeholder="Password"
         v-model="password"
-        :class="`border-2 border-gray-300 rounded-sm p-2 focus:outline-none ${step === 2 ? 'block' : 'hidden'}`" />
+        :class="`border-2 border-line-strong rounded-sm p-2 focus:outline-none ${step === 2 ? 'block' : 'hidden'}`" />
 
       <input
         type="password"
         placeholder="Repeat Password"
         v-model="confirmPassword"
-        :class="`border-2 border-gray-300 rounded-sm p-2 focus:outline-none ${step === 2 ? 'block' : 'hidden'}`" />
+        :class="`border-2 border-line-strong rounded-sm p-2 focus:outline-none ${step === 2 ? 'block' : 'hidden'}`" />
 
       <input
         type="number"
         placeholder="How old are you?"
         v-model="age"
-        :class="`border-2 border-gray-300 rounded-sm p-2 focus:outline-none ${step === 2 ? 'block' : 'hidden'}`" />
+        :class="`border-2 border-line-strong rounded-sm p-2 focus:outline-none ${step === 2 ? 'block' : 'hidden'}`" />
 
       <p
-        :class="`${error ? 'block' : 'hidden'} text-base-red text-left text-sm`">
+        :class="`${error ? 'block' : 'hidden'} text-link text-left text-sm`">
         {{ error }}
       </p>
 
       <button
-        class="block bg-base-red/80 hover:bg-base-red text-gray-100 p-2 rounded-sm">
+        class="block bg-action hover:bg-action/90 text-on-action p-2 rounded-sm">
         {{ step === 1 ? "Sign Up" : "Create an account" }}
       </button>
     </form>

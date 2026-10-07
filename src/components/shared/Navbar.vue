@@ -21,7 +21,7 @@ watch(
 </script>
 
 <template>
-  <nav class="sticky top-0 z-10 bg-gray-100 px-6 py-4 lg:px-10 2xl:px-48">
+  <nav class="sticky top-0 z-10 bg-nav px-6 py-4 lg:px-10 2xl:px-48">
     <div class="flex items-center">
       <RouterLink to="/" class="flex items-center gap-2">
         <figure class="w-14 lg:w-20 h-auto flex items-center justify-center">
@@ -30,22 +30,22 @@ watch(
             alt="novashelf logo with no background"
             class="inline-block w-full h-full" />
         </figure>
-        <h1 class="text-2xl text-base-red font-medium">novashelf</h1>
+        <h1 class="text-2xl text-brand font-medium">novashelf</h1>
       </RouterLink>
 
       <ul class="hidden md:flex ml-auto items-center gap-10 2xl:text-base">
         <li v-for="navLink in navLinks" :key="navLink.path">
           <RouterLink
             :to="navLink.path"
-            class="font-medium hover:text-base-red"
-            active-class="text-base-red"
+            class="font-medium hover:text-link"
+            active-class="text-link"
             >{{ navLink.name }}</RouterLink
           >
         </li>
         <li>
           <RouterLink
             to="/sign-up"
-            class="bg-base-red px-4 py-1 font-medium rounded-md text-gray-100"
+            class="bg-action px-4 py-1 font-medium rounded-md text-on-action"
             >Get Started</RouterLink
           >
         </li>
@@ -72,14 +72,14 @@ watch(
         <RouterLink
           :to="navLink.path"
           class="font-medium"
-          active-class="text-base-red"
+          active-class="text-link"
           >{{ navLink.name }}</RouterLink
         >
       </li>
       <li>
         <RouterLink
           to="/sign-up"
-          class="inline-block bg-base-red px-4 py-1 font-medium rounded-md text-gray-100"
+          class="inline-block bg-action px-4 py-1 font-medium rounded-md text-on-action"
           >Get Started</RouterLink
         >
       </li>

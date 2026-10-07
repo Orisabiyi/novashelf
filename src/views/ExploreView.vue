@@ -69,8 +69,8 @@ const isEmpty = computed(
 const chipClass = (selected) =>
   `shrink-0 px-4 py-1 rounded-full border-2 font-medium transition-colors ${
     selected
-      ? "bg-base-red border-base-red text-gray-100"
-      : "border-gray-300 hover:border-base-red hover:text-base-red"
+      ? "bg-action border-action text-on-action"
+      : "border-line-strong hover:border-link hover:text-link"
   }`;
 </script>
 
@@ -78,7 +78,7 @@ const chipClass = (selected) =>
   <section class="px-6 py-8 lg:px-10 2xl:px-48 space-y-8">
     <header class="space-y-4">
       <h2 class="text-4xl font-bold">Explore</h2>
-      <p class="text-lg text-gray-700">
+      <p class="text-lg text-muted">
         The latest from NASA, ESA and the rest of the space world.
       </p>
 
@@ -108,20 +108,20 @@ const chipClass = (selected) =>
       v-if="error && items.length === 0"
       role="alert"
       class="flex flex-col items-center gap-4 py-20 text-center">
-      <i class="pi pi-exclamation-circle text-base-red" style="font-size: 2.5rem"></i>
+      <i class="pi pi-exclamation-circle text-brand" style="font-size: 2.5rem"></i>
       <p class="text-lg max-w-md">{{ error.message }}</p>
       <!-- A 400 (e.g. an unknown topic in the URL) won't succeed on retry. -->
       <button
         v-if="error.status === 400"
         type="button"
-        class="bg-base-red px-4 py-1 rounded-md text-gray-100"
+        class="bg-action px-4 py-1 rounded-md text-on-action"
         @click="selectTopic(null)">
         Show all articles
       </button>
       <button
         v-else
         type="button"
-        class="bg-base-red px-4 py-1 rounded-md text-gray-100"
+        class="bg-action px-4 py-1 rounded-md text-on-action"
         @click="loadMore">
         Try again
       </button>
@@ -130,7 +130,7 @@ const chipClass = (selected) =>
     <div
       v-else-if="isEmpty"
       class="flex flex-col items-center gap-4 py-20 text-center">
-      <i class="pi pi-search text-gray-400" style="font-size: 2.5rem"></i>
+      <i class="pi pi-search text-muted" style="font-size: 2.5rem"></i>
       <p class="text-lg">No articles on this topic yet. Try another one.</p>
     </div>
 
@@ -153,7 +153,7 @@ const chipClass = (selected) =>
       <p>{{ error.message }}</p>
       <button
         type="button"
-        class="border-2 border-base-red text-base-red px-4 py-1 rounded-md font-medium"
+        class="border-2 border-link text-link px-4 py-1 rounded-md font-medium"
         @click="loadMore">
         Try again
       </button>
@@ -161,7 +161,7 @@ const chipClass = (selected) =>
 
     <p
       v-if="!hasMore && items.length > 0"
-      class="text-center text-gray-500 pb-4">
+      class="text-center text-muted pb-4">
       You've reached the edge of the known universe. 🌌
     </p>
 

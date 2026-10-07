@@ -46,7 +46,7 @@ onMounted(async () => {
         <h3 class="font-medium">Powered by NASA</h3>
       </div>
 
-      <h2 class="text-5xl lg:text-6xl text-base-red font-bold flex flex-col">
+      <h2 class="text-5xl lg:text-6xl text-brand font-bold flex flex-col">
         Space made simple
       </h2>
 
@@ -58,10 +58,10 @@ onMounted(async () => {
       <div class="flex flex-wrap items-center gap-4">
         <RouterLink
           to="/explore"
-          class="bg-base-red px-4 py-1 rounded-md text-gray-100 text-lg"
+          class="bg-action px-4 py-1 rounded-md text-on-action text-lg"
           >Start reading</RouterLink
         >
-        <RouterLink to="/sign-up" class="text-lg font-medium hover:text-base-red"
+        <RouterLink to="/sign-up" class="text-lg font-medium hover:text-link"
           >Sign up for
           <span class="product-name font-bold">novashelf</span>
         </RouterLink>

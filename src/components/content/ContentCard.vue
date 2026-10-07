@@ -28,10 +28,10 @@ const meta = computed(() =>
 <template>
   <RouterLink
     :to="`/read/${item.id}`"
-    class="group flex flex-col bg-white shadow-xl rounded-sm overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-base-red">
+    class="group flex flex-col bg-surface shadow-xl rounded-sm overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link">
     <figure
       v-if="item.imageUrl && !imageFailed"
-      class="aspect-video overflow-hidden bg-gray-200">
+      class="aspect-video overflow-hidden bg-subtle">
       <img
         :src="item.imageUrl"
         alt=""
@@ -41,16 +41,16 @@ const meta = computed(() =>
     </figure>
 
     <div class="p-4 space-y-2">
-      <p v-if="meta" class="text-xs font-medium text-gray-500 truncate">
+      <p v-if="meta" class="text-xs font-medium text-muted truncate">
         {{ meta }}
       </p>
 
       <h3
-        :class="`font-bold leading-tight line-clamp-3 group-hover:text-base-red transition-colors ${compact ? 'text-lg' : 'text-xl'}`">
+        :class="`font-bold leading-tight line-clamp-3 group-hover:text-link transition-colors ${compact ? 'text-lg' : 'text-xl'}`">
         {{ item.title }}
       </h3>
 
-      <p v-if="!compact && item.summary" class="text-gray-700 line-clamp-3">
+      <p v-if="!compact && item.summary" class="text-muted line-clamp-3">
         {{ item.summary }}
       </p>
     </div>
