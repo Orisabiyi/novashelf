@@ -2,41 +2,19 @@
 @import "tailwindcss";
 
 /*
- * Novashelf palette: "Moonlight Grey" — a warm grey page, white cards, graphite ink and a
- * graphite navbar, with Mars red as the brand colour and slate as the second colour.
+ * Novashelf palette: "Moonlight Grey", dark by default — warm charcoal page and cards,
+ * light ink, a near-black navbar, with Mars red as the brand colour and slate as the
+ * second colour. A light variant lives under data-theme="light" for reader preferences.
  * Use these tokens (bg-page, text-ink, bg-action …) instead of Tailwind's stock grays so
  * both themes stay consistent.
  *
- * Red has three jobs, because #d85357 is too light for small text and buttons (3.6:1):
- *   brand     logo, display headlines, icons (large: passes at 3:1)
- *   action    button fills; pair with text-on-action (5.2:1 light, 4.6:1 dark)
- *   link      small red text, links, active/hover states (5.2:1 light, 5.7:1 dark)
+ * Red has three jobs, because #d85357 is too light for small text on light backgrounds:
+ *   brand     logo, display headlines, icons
+ *   action    button fills; pair with text-on-action (4.6:1 dark, 5.2:1 light)
+ *   link      small red text, links, active/hover states (5.7:1 dark, 5.2:1 light)
  */
 @theme {
   --color-brand: #d85357;
-  --color-action: #c13f45;
-  --color-on-action: #ffffff;
-  --color-link: #c13f45;
-
-  --color-page: #ebe8e4;
-  --color-surface: #ffffff;
-  --color-ink: #1f1d1c;
-  --color-muted: #5c5753;
-  --color-line: #e3e0dc;
-  --color-line-strong: #d2cdc8;
-  --color-subtle: #efece8;
-  --color-slate: #4a5568;
-  --color-on-slate: #ffffff;
-
-  /* The navbar is a dark graphite band in both themes. */
-  --color-nav: #1f1d1c;
-  --color-on-nav: #efedea;
-  --color-on-nav-muted: #b5afaa;
-  --color-nav-link: #e8787b;
-}
-
-/* Dark theme: set data-theme="dark" on <html> (wired up with reader preferences). */
-:root[data-theme="dark"] {
   --color-action: #d85357;
   --color-on-action: #171615;
   --color-link: #e8787b;
@@ -52,8 +30,35 @@
   --color-on-slate: #171615;
 
   --color-nav: #0e0d0d;
+  --color-on-nav: #efedea;
+  --color-on-nav-muted: #b5afaa;
+  --color-nav-link: #e8787b;
+}
 
+:root {
   color-scheme: dark;
+}
+
+/* Light theme: set data-theme="light" on <html> (wired up with reader preferences). */
+:root[data-theme="light"] {
+  --color-action: #c13f45;
+  --color-on-action: #ffffff;
+  --color-link: #c13f45;
+
+  --color-page: #ebe8e4;
+  --color-surface: #ffffff;
+  --color-ink: #1f1d1c;
+  --color-muted: #5c5753;
+  --color-line: #e3e0dc;
+  --color-line-strong: #d2cdc8;
+  --color-subtle: #efece8;
+  --color-slate: #4a5568;
+  --color-on-slate: #ffffff;
+
+  /* The navbar stays a dark graphite band in the light theme. */
+  --color-nav: #1f1d1c;
+
+  color-scheme: light;
 }
 
 body {
