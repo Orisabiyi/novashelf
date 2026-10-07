@@ -34,8 +34,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <header
-    class="min-h-screen flex items-center gap-10 p-10 2xl:py-5 2xl:px-48">
+  <header class="flex-1 flex items-center gap-10 p-10 2xl:py-5 2xl:px-48">
     <div class="w-full lg:w-2/5 flex flex-col items-start gap-5">
       <div class="flex items-center gap-2">
         <figure class="w-12 h-auto flex items-center justify-center">
@@ -69,25 +68,28 @@ onMounted(async () => {
       </div>
     </div>
 
+    <!-- Absolutely positioned so the cards never stretch the hero past the viewport. -->
     <div
-      class="hidden lg:flex flex-1 h-screen overflow-hidden items-center gap-4"
+      class="hidden lg:block relative flex-1 self-stretch overflow-hidden"
       aria-label="Latest articles">
-      <div
-        v-for="(column, index) in columns"
-        :key="index"
-        :class="`w-64 shrink-0 space-y-4 ${index === 1 ? 'translate-y-5' : ''}`">
-        <template v-if="loading">
-          <ContentCardSkeleton
-            v-for="n in COLUMN_SIZES[index]"
-            :key="n"
+      <div class="absolute inset-0 flex items-center gap-4">
+        <div
+          v-for="(column, index) in columns"
+          :key="index"
+          :class="`w-64 shrink-0 space-y-4 ${index === 1 ? 'translate-y-5' : ''}`">
+          <template v-if="loading">
+            <ContentCardSkeleton
+              v-for="n in COLUMN_SIZES[index]"
+              :key="n"
+              compact />
+          </template>
+          <ContentCard
+            v-for="article in column"
+            v-else
+            :key="article.id"
+            :item="article"
             compact />
-        </template>
-        <ContentCard
-          v-for="article in column"
-          v-else
-          :key="article.id"
-          :item="article"
-          compact />
+        </div>
       </div>
     </div>
   </header>

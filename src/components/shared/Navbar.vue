@@ -1,5 +1,6 @@
 <script setup>
-import { defineProps } from "vue";
+import { ref, watch } from "vue";
+import { RouterLink, useRoute } from "vue-router";
 import logoImg from "@/assets/novashelf-logo-ord.svg";
 
 const navLinks = [
@@ -7,45 +8,80 @@ const navLinks = [
     name: "Explore",
     path: "/explore",
   },
-  {
-    name: "About",
-    path: "/about",
-  },
-  {
-    name: "Sign In",
-    path: "/login",
-    type: "button",
-  },
-  {
-    name: "Get Started",
-    path: "/sign-up",
-    type: "button",
-  },
 ];
 
-defineProps({
-  className: String,
-});
+const route = useRoute();
+const menuOpen = ref(false);
+
+// Close the mobile menu after navigating.
+watch(
+  () => route.fullPath,
+  () => (menuOpen.value = false),
+);
 </script>
 
 <template>
-  <nav :class="`px-10 py-5 2xl:px-48 flex bg-gray-100 z-10 ${className}`">
-    <a href="/" class="flex items-center gap-2 block">
-      <figure class="w-20 h-auto flex items-center justify-center">
-        <img
-          :src="logoImg"
-          alt="novashelf logo with no background"
-          class="inline-block w-full h-full" />
-      </figure>
-      <h1 class="text-2xl text-base-red font-medium">novashelf</h1>
-    </a>
+  <nav class="sticky top-0 z-10 bg-gray-100 px-6 py-4 lg:px-10 2xl:px-48">
+    <div class="flex items-center">
+      <RouterLink to="/" class="flex items-center gap-2">
+        <figure class="w-14 lg:w-20 h-auto flex items-center justify-center">
+          <img
+            :src="logoImg"
+            alt="novashelf logo with no background"
+            class="inline-block w-full h-full" />
+        </figure>
+        <h1 class="text-2xl text-base-red font-medium">novashelf</h1>
+      </RouterLink>
 
-    <ul class="ml-auto flex items-center gap-10 2xl:text-base">
-      <li
-        v-for="navLink in navLinks"
-        :key="navLink.path"
-        :class="`${navLink.type === 'button' ? 'bg-base-red px-4 py-1 font-medium rounded-md text-gray-100' : ''}`">
-        <RouterLink :to="navLink.path">{{ navLink.name }}</RouterLink>
+      <ul class="hidden md:flex ml-auto items-center gap-10 2xl:text-base">
+        <li v-for="navLink in navLinks" :key="navLink.path">
+          <RouterLink
+            :to="navLink.path"
+            class="font-medium hover:text-base-red"
+            active-class="text-base-red"
+            >{{ navLink.name }}</RouterLink
+          >
+        </li>
+        <li>
+          <RouterLink
+            to="/sign-up"
+            class="bg-base-red px-4 py-1 font-medium rounded-md text-gray-100"
+            >Get Started</RouterLink
+          >
+        </li>
+      </ul>
+
+      <button
+        type="button"
+        class="md:hidden ml-auto p-2"
+        :aria-expanded="menuOpen"
+        aria-controls="mobile-nav"
+        :aria-label="menuOpen ? 'Close menu' : 'Open menu'"
+        @click="menuOpen = !menuOpen">
+        <i
+          :class="menuOpen ? 'pi pi-times' : 'pi pi-bars'"
+          style="font-size: 1.25rem"></i>
+      </button>
+    </div>
+
+    <ul
+      v-if="menuOpen"
+      id="mobile-nav"
+      class="md:hidden flex flex-col gap-4 pt-4 text-lg">
+      <li v-for="navLink in navLinks" :key="navLink.path">
+        <RouterLink
+          :to="navLink.path"
+          class="font-medium"
+          active-class="text-base-red"
+          >{{ navLink.name }}</RouterLink
+        >
+      </li>
+      <li>
+        <RouterLink
+          to="/sign-up"
+          class="inline-block bg-base-red px-4 py-1 font-medium rounded-md text-gray-100"
+          >Get Started</RouterLink
+        >
       </li>
     </ul>
   </nav>
