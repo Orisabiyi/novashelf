@@ -84,7 +84,9 @@ public static partial class ArticleSanitizer
 
         RemovePageChrome(document.Body!);
 
-        return Sanitizer.Sanitize(document.Body!.InnerHtml, baseUrl).Trim();
+        var sanitized = Parser.ParseDocument($"<body>{Sanitizer.Sanitize(document.Body!.InnerHtml, baseUrl)}</body>");
+        RemoveEmptyBlocks(sanitized.Body!);
+        return sanitized.Body!.InnerHtml.Trim();
     }
 
     private const string Blocks = "h1, h2, h3, h4, h5, h6, p, li, figure, blockquote, pre, table, img";
@@ -107,6 +109,16 @@ public static partial class ArticleSanitizer
                && last.LocalName is "h1" or "h2" or "h3" or "h4" or "h5" or "h6")
         {
             last.Remove();
+        }
+    }
+
+    /// <summary>Paragraphs and list items left with no text or image just leave gaps.</summary>
+    private static void RemoveEmptyBlocks(IElement body)
+    {
+        foreach (var element in body.QuerySelectorAll("p, li, figure, figcaption, blockquote, h2, h3, h4, h5, h6").Reverse())
+        {
+            if (string.IsNullOrWhiteSpace(element.TextContent) && element.QuerySelector("img") is null)
+                element.Remove();
         }
     }
 

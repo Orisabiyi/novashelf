@@ -128,6 +128,16 @@ public class PageChromeTests
     }
 
     [Fact]
+    public void Empty_blocks_are_removed_but_image_figures_stay()
+    {
+        var html = ArticleSanitizer.Sanitize(
+            "<p></p><p> &nbsp; </p><div><p><span></span></p></div><figure><img src=\"/a.jpg\" alt=\"a\"></figure><p>Text</p><ul><li></li></ul>", Base);
+
+        Assert.StartsWith("<figure><img src=\"https://science.nasa.gov/a.jpg\"", html);
+        Assert.EndsWith("</figure><p>Text</p><ul></ul>", html);
+    }
+
+    [Fact]
     public void Headings_followed_by_content_and_sentences_mentioning_reading_stay()
     {
         var html = ArticleSanitizer.Sanitize(
