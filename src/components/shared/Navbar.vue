@@ -12,9 +12,14 @@ const navLinks = [
     isActive: () => route.path.startsWith("/explore"),
   },
   {
-    name: "Today's picture",
-    to: "/#today",
-    isActive: () => route.path === "/" && route.hash === "#today",
+    name: "Picture of the day",
+    to: "/apod",
+    isActive: () => route.path.startsWith("/apod"),
+  },
+  {
+    name: "Images",
+    to: "/images",
+    isActive: () => route.path.startsWith("/images"),
   },
 ];
 

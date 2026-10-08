@@ -1,7 +1,6 @@
 <script setup>
 import { computed, ref } from "vue";
 import { RouterLink } from "vue-router";
-import { prefetchReadable, rememberPreview } from "@/api/readerCache";
 import { formatLongDate } from "@/utils/format";
 import { imageAt, imageSrcset } from "@/utils/images";
 
@@ -18,10 +17,7 @@ const props = defineProps({
 });
 
 const imageFailed = ref(false);
-const imageEl = ref(null);
 
-const intent = () => prefetchReadable(props.apod, imageEl.value?.currentSrc);
-const open = () => rememberPreview(props.apod, imageEl.value?.currentSrc);
 const date = computed(() => formatLongDate(props.apod?.publishedAt));
 </script>
 
@@ -33,15 +29,10 @@ const date = computed(() => formatLongDate(props.apod?.publishedAt));
 
   <RouterLink
     v-else-if="apod"
-    :to="`/read/${apod.id}`"
-    @pointerenter="intent"
-    @focus="intent"
-    @touchstart.passive="intent"
-    @click="open"
+    to="/apod"
     class="group relative block aspect-[4/5] w-full overflow-hidden rounded-[2rem] bg-surface ring-1 ring-ink/10 shadow-2xl shadow-black/50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link">
     <img
       v-if="apod.imageUrl && !imageFailed"
-      ref="imageEl"
       :src="imageAt(apod.imageUrl, 960)"
       :srcset="imageSrcset(apod.imageUrl, [640, 960, 1280, 1600])"
       sizes="(min-width: 1024px) 40vw, 100vw"
