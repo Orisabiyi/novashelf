@@ -98,6 +98,9 @@ public class ApodMappingTests
     [InlineData(
         "Explanation: The ring is 4 light-days across. Tomorrow’s picture: open space",
         "The ring is 4 light-days across.")]
+    [InlineData(
+        "Explanation: Curiosity gained 1 kilometer. APOD's email for image submissions has changed. Please see: APOD Submissions.",
+        "Curiosity gained 1 kilometer.")]
     [InlineData("Explanation: Nothing to trim here.", "Nothing to trim here.")]
     public void Explanation_loses_label_and_page_footer(string raw, string expected) =>
         Assert.Equal(expected, ApodClient.CleanExplanation(raw));

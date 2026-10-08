@@ -167,7 +167,7 @@ public sealed partial class ApodClient(HttpClient http, IMemoryCache cache, Time
     private static partial Regex ExplanationLabel();
 
     [GeneratedRegex(
-        @"\s*(?:Your Sky Surprise|Tomorrow[’']s picture|Explore Your Universe|Open Science|Almost Hyperspace|Follow APOD)\b[^:]{0,40}:.*$",
+        @"\s*(?:Your Sky Surprise|Tomorrow[’']s picture|Explore Your Universe|Open Science|Almost Hyperspace|Follow APOD|APOD[’']s email)\b[^:]{0,80}:.*$",
         RegexOptions.IgnoreCase | RegexOptions.Singleline)]
     private static partial Regex PageFooter();
 
