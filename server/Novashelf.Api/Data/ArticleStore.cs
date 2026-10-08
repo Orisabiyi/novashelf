@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Novashelf.Api.Data;
 
@@ -56,10 +57,11 @@ public sealed class PostgresArticleStore(IDbContextFactory<AppDbContext> context
                 existing.ReadingMinutes = article.ReadingMinutes;
                 existing.FormatVersion = article.FormatVersion;
                 existing.ExtractedAt = article.ExtractedAt;
+                existing.Item = article.Item;
             }
             await db.SaveChangesAsync(ct);
         }
-        catch (DbUpdateException)
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
         {
             // Another instance saved the same article first; theirs is just as good.
         }

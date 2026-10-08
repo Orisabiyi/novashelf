@@ -47,6 +47,10 @@ namespace Novashelf.Api.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("html");
 
+                    b.Property<string>("Item")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("item");
+
                     b.Property<int>("ReadingMinutes")
                         .HasColumnType("integer")
                         .HasColumnName("reading_minutes");

@@ -2,6 +2,8 @@ using System.Collections.Concurrent;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Caching.Memory;
 using Novashelf.Api.Data;
 using Novashelf.Api.Images;
@@ -40,7 +42,7 @@ public sealed class ReaderService(
     /// <summary>
     /// Bump when extraction or clean-up rules change, so stored articles are re-extracted with them.
     /// </summary>
-    public const int FormatVersion = 1;
+    public const int FormatVersion = 2;
 
     private static readonly TimeSpan StoredArticleMaxAge = TimeSpan.FromDays(30);
 
@@ -59,6 +61,17 @@ public sealed class ReaderService(
     /// <summary>Returns null when the id doesn't exist.</summary>
     public async Task<ReadableContent?> GetAsync(string id, CancellationToken ct)
     {
+        if (cache.TryGetValue(CacheKey(id), out ReadableContent? cached)) return cached;
+
+        // A stored article carries its own details, so it's served without asking the source
+        // (Spaceflight News can take several seconds to answer).
+        if (ContentId.TryParseArticle(id, out _) && await LoadStoredAsync(id, item: null) is { } stored)
+        {
+            var readable = WithProxiedImages(stored);
+            cache.Set(CacheKey(id), readable, ExtractedTtl);
+            return readable;
+        }
+
         var item = await resolver.GetAsync(id, ct);
         if (item is null) return null;
         return await GetForItemAsync(item).WaitAsync(ct);
@@ -101,10 +114,8 @@ public sealed class ReaderService(
             try
             {
                 // Memory, then the database, then the publisher.
-                var extracted = await LoadStoredAsync(item) ?? await ExtractAndStoreAsync(item);
-                var readable = extracted is null
-                    ? FromSummary(item, extracted: false)
-                    : extracted with { Html = ArticleImages.Rewrite(extracted.Html, images) };
+                var extracted = await LoadStoredAsync(item.Id, item) ?? await ExtractAndStoreAsync(item);
+                var readable = extracted is null ? FromSummary(item, extracted: false) : WithProxiedImages(extracted);
                 // Retry failed extractions sooner: the site may have been briefly down.
                 cache.Set(CacheKey(item.Id), readable, extracted is null ? FallbackTtl : ExtractedTtl);
                 return readable;
@@ -119,16 +130,45 @@ public sealed class ReaderService(
 
     private static string CacheKey(string id) => $"reader:{id}";
 
-    private async Task<ReadableContent?> LoadStoredAsync(ContentItem item)
+    /// <param name="item">The item if already known; otherwise the stored copy of its details is used.</param>
+    private async Task<ReadableContent?> LoadStoredAsync(string id, ContentItem? item)
     {
-        var stored = await store.GetAsync(item.Id, CancellationToken.None);
+        var stored = await store.GetAsync(id, CancellationToken.None);
         if (stored is null
             || stored.FormatVersion != FormatVersion
             || time.GetUtcNow() - stored.ExtractedAt > StoredArticleMaxAge)
         {
             return null;
         }
-        return new ReadableContent(item, stored.Html, stored.Byline, stored.ReadingMinutes, Extracted: true);
+
+        item ??= DeserializeItem(stored.Item);
+        return item is null
+            ? null
+            : new ReadableContent(item, stored.Html, stored.Byline, stored.ReadingMinutes, Extracted: true);
+    }
+
+    // Stored HTML keeps original image URLs; signed proxy links are added on the way out.
+    private ReadableContent WithProxiedImages(ReadableContent readable) =>
+        readable with { Html = ArticleImages.Rewrite(readable.Html, images) };
+
+    private static readonly JsonSerializerOptions ItemJson = new(JsonSerializerDefaults.Web)
+    {
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+    };
+
+    internal static string SerializeItem(ContentItem item) => JsonSerializer.Serialize(item, ItemJson);
+
+    internal static ContentItem? DeserializeItem(string? json)
+    {
+        if (string.IsNullOrEmpty(json)) return null;
+        try
+        {
+            return JsonSerializer.Deserialize<ContentItem>(json, ItemJson);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 
     private async Task<ReadableContent?> ExtractAndStoreAsync(ContentItem item)
@@ -145,6 +185,7 @@ public sealed class ReaderService(
                 ReadingMinutes = extracted.ReadingMinutes,
                 FormatVersion = FormatVersion,
                 ExtractedAt = time.GetUtcNow(),
+                Item = SerializeItem(item),
             }, CancellationToken.None);
         }
         return extracted;

@@ -18,6 +18,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             article.Property(a => a.ReadingMinutes).HasColumnName("reading_minutes");
             article.Property(a => a.FormatVersion).HasColumnName("format_version");
             article.Property(a => a.ExtractedAt).HasColumnName("extracted_at");
+            article.Property(a => a.Item).HasColumnName("item").HasColumnType("jsonb");
         });
     }
 }
@@ -38,4 +39,10 @@ public sealed class CachedArticle
     public int FormatVersion { get; set; }
 
     public DateTimeOffset ExtractedAt { get; set; }
+
+    /// <summary>
+    /// The item's details (title, image, source…) as JSON, so a stored article can be served without
+    /// looking it up at its source again. Null for rows saved before this was added.
+    /// </summary>
+    public string? Item { get; set; }
 }

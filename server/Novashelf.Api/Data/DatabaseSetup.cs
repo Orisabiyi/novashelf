@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Npgsql;
 
 namespace Novashelf.Api.Data;
 
@@ -31,16 +32,22 @@ public static class DatabaseSetup
     public static async Task MigrateDatabaseAsync(this WebApplication app)
     {
         var config = app.Configuration;
-        if (string.IsNullOrWhiteSpace(config.GetConnectionString("Default"))
-            || !config.GetValue("Database:MigrateOnStartup", defaultValue: true))
+        if (string.IsNullOrWhiteSpace(config.GetConnectionString("Default")))
         {
+            // Easy to hit by accident: user-secrets only load in the Development environment.
+            app.Logger.LogWarning(
+                "No database configured (ConnectionStrings:Default is empty in the {Environment} environment). " +
+                "Extracted articles are kept in memory only.", app.Environment.EnvironmentName);
             return;
         }
+
+        if (!config.GetValue("Database:MigrateOnStartup", defaultValue: true)) return;
 
         var connectionString = config.GetConnectionString("Migrations") ?? config.GetConnectionString("Default");
         var options = new DbContextOptionsBuilder<AppDbContext>().UseNpgsql(connectionString).Options;
         await using var db = new AppDbContext(options);
         await db.Database.MigrateAsync();
+        app.Logger.LogInformation("Database ready: {Host}", new NpgsqlConnectionStringBuilder(connectionString).Host);
     }
 }
 

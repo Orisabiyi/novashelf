@@ -168,3 +168,23 @@ public class ReaderSummaryTests
         Assert.Equal(2, ReaderService.FromSummary(Item(string.Join(' ', Enumerable.Repeat("word", 460))), extracted: false).ReadingMinutes);
     }
 }
+
+public class StoredItemTests
+{
+    [Fact]
+    public void Item_details_round_trip_through_storage()
+    {
+        var item = new ContentItem("sfn-40309", ContentKind.Article, "Title", "Summary", "https://x.org/a.jpg",
+            "https://x.org/story", "NASA", new DateTimeOffset(2026, 10, 8, 9, 30, 0, TimeSpan.Zero),
+            new TopicTag("moon", "Moon"));
+
+        Assert.Equal(item, ReaderService.DeserializeItem(ReaderService.SerializeItem(item)));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("{not json")]
+    public void Missing_or_broken_item_details_mean_no_stored_item(string? json) =>
+        Assert.Null(ReaderService.DeserializeItem(json));
+}
