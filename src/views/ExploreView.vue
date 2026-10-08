@@ -1,11 +1,11 @@
 <script setup>
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { getTopics } from "@/api/content";
 import ContentCard from "@/components/content/ContentCard.vue";
 import ContentCardSkeleton from "@/components/content/ContentCardSkeleton.vue";
 import { useFeed } from "@/composables/useFeed";
-import { useInView } from "@/composables/useInView";
+import { useInfiniteScroll } from "@/composables/useInfiniteScroll";
 
 const route = useRoute();
 const router = useRouter();
@@ -32,34 +32,9 @@ function selectTopic(slug) {
 
 const { items, hasMore, loading, error, loadMore } = useFeed(topic);
 
-// Keep loading while the bottom of the list is near the viewport. This also does the
-// first load, and keeps going if a page comes back short.
-const SENTINEL_MARGIN = 600;
+// Load more as the bottom of the list nears the viewport (this also does the first load).
 const sentinel = ref(null);
-const nearBottom = useInView(sentinel, `${SENTINEL_MARGIN}px`);
-
-// The observer reports asynchronously, so right after a page renders `nearBottom` can
-// still be true from before the new cards pushed the sentinel down. Measure for real.
-function sentinelIsNear() {
-  const rect = sentinel.value?.getBoundingClientRect();
-  return !!rect && rect.top < window.innerHeight + SENTINEL_MARGIN;
-}
-
-watch(
-  [nearBottom, loading, hasMore, error],
-  () => {
-    if (
-      nearBottom.value &&
-      !loading.value &&
-      hasMore.value &&
-      !error.value &&
-      sentinelIsNear()
-    ) {
-      loadMore();
-    }
-  },
-  { immediate: true, flush: "post" },
-);
+useInfiniteScroll(sentinel, { loading, hasMore, error, loadMore });
 
 const initialLoad = computed(() => loading.value && items.value.length === 0);
 const isEmpty = computed(
