@@ -1,6 +1,7 @@
 import ApodView from "@/views/ApodView.vue";
 import ExploreView from "@/views/ExploreView.vue";
 import HomeView from "@/views/HomeView.vue";
+import ImagesView from "@/views/ImagesView.vue";
 import NotFound from "@/views/NotFound.vue";
 import Onboard from "@/views/Onboard.vue";
 import ReaderView from "@/views/ReaderView.vue";
@@ -31,6 +32,11 @@ const router = createRouter({
       path: "/apod",
       name: "apod",
       component: ApodView,
+    },
+    {
+      path: "/images",
+      name: "images",
+      component: ImagesView,
     },
     {
       path: "/read/:id",

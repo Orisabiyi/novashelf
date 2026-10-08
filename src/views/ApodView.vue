@@ -2,7 +2,7 @@
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { getApod, getApodArchive } from "@/api/content";
-import ApodTile from "@/components/apod/ApodTile.vue";
+import PhotoTile from "@/components/content/PhotoTile.vue";
 import { useInfiniteScroll } from "@/composables/useInfiniteScroll";
 import { usePagedList } from "@/composables/usePagedList";
 import {
@@ -10,6 +10,7 @@ import {
   addDays,
   apodDate,
   formatFullDate,
+  formatShortDate,
   isIsoDate,
   randomDateBetween,
   todayIso,
@@ -267,10 +268,12 @@ const paragraphs = computed(() =>
       </div>
 
       <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 lg:gap-4">
-        <ApodTile
+        <PhotoTile
           v-for="item in archive.items.value"
           :key="item.id"
           :item="item"
+          :to="{ path: '/apod', query: { date: apodDate(item.id) } }"
+          :label="formatShortDate(apodDate(item.id))"
           :selected="apodDate(item.id) === currentDate" />
         <template v-if="archive.loading.value">
           <div
