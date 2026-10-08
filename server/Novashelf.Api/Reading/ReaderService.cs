@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.Extensions.Caching.Memory;
+using Novashelf.Api.Data;
 using Novashelf.Api.Images;
 using Novashelf.Api.Models;
 using Novashelf.Api.Sources;
@@ -31,9 +32,18 @@ public sealed class ReaderService(
     HttpClient http,
     ContentResolver resolver,
     ImageUrlSigner images,
+    IArticleStore store,
     IMemoryCache cache,
+    TimeProvider time,
     ILogger<ReaderService> logger)
 {
+    /// <summary>
+    /// Bump when extraction or clean-up rules change, so stored articles are re-extracted with them.
+    /// </summary>
+    public const int FormatVersion = 1;
+
+    private static readonly TimeSpan StoredArticleMaxAge = TimeSpan.FromDays(30);
+
     private const int MaxPageBytes = 5 * 1024 * 1024;
     private const int MinArticleTextLength = 400;
     private const int WordsPerMinute = 230;
@@ -90,8 +100,11 @@ public sealed class ReaderService(
         {
             try
             {
-                var extracted = await ExtractAsync(item, CancellationToken.None);
-                var readable = extracted ?? FromSummary(item, extracted: false);
+                // Memory, then the database, then the publisher.
+                var extracted = await LoadStoredAsync(item) ?? await ExtractAndStoreAsync(item);
+                var readable = extracted is null
+                    ? FromSummary(item, extracted: false)
+                    : extracted with { Html = ArticleImages.Rewrite(extracted.Html, images) };
                 // Retry failed extractions sooner: the site may have been briefly down.
                 cache.Set(CacheKey(item.Id), readable, extracted is null ? FallbackTtl : ExtractedTtl);
                 return readable;
@@ -105,6 +118,37 @@ public sealed class ReaderService(
     }
 
     private static string CacheKey(string id) => $"reader:{id}";
+
+    private async Task<ReadableContent?> LoadStoredAsync(ContentItem item)
+    {
+        var stored = await store.GetAsync(item.Id, CancellationToken.None);
+        if (stored is null
+            || stored.FormatVersion != FormatVersion
+            || time.GetUtcNow() - stored.ExtractedAt > StoredArticleMaxAge)
+        {
+            return null;
+        }
+        return new ReadableContent(item, stored.Html, stored.Byline, stored.ReadingMinutes, Extracted: true);
+    }
+
+    private async Task<ReadableContent?> ExtractAndStoreAsync(ContentItem item)
+    {
+        var extracted = await ExtractAsync(item, CancellationToken.None);
+        if (extracted is not null)
+        {
+            // Only full extractions are kept; a failed one is retried on a later visit.
+            await store.SaveAsync(new CachedArticle
+            {
+                ContentId = item.Id,
+                Html = extracted.Html,
+                Byline = extracted.Byline,
+                ReadingMinutes = extracted.ReadingMinutes,
+                FormatVersion = FormatVersion,
+                ExtractedAt = time.GetUtcNow(),
+            }, CancellationToken.None);
+        }
+        return extracted;
+    }
 
     private async Task<ReadableContent?> ExtractAsync(ContentItem item, CancellationToken ct)
     {
@@ -136,7 +180,9 @@ public sealed class ReaderService(
             var article = new ReadabilityParser(pageUrl, html).GetArticle();
             if (!article.IsReadable || string.IsNullOrWhiteSpace(article.Content)) return null;
 
-            var body = ArticleImages.Rewrite(ArticleSanitizer.Sanitize(article.Content, pageUrl), images);
+            // Stored with original image URLs; proxy links are added when served (they're signed
+            // with a key that can change between runs).
+            var body = ArticleSanitizer.Sanitize(article.Content, pageUrl);
             if ((article.TextContent?.Trim().Length ?? 0) < MinArticleTextLength) return null;
 
             var minutes = (int)Math.Round(article.TimeToRead.TotalMinutes);

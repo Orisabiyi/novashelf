@@ -14,12 +14,16 @@ in memory:
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) (`dotnet --list-sdks` should show `10.x`)
 
-No database, Docker or API keys are needed yet.
+A Postgres database ([Neon](https://neon.com)) is optional: without one the API keeps extracted
+articles in memory only. No Docker or API keys are needed.
 
 ### Configuration
 
 | Setting | Purpose |
 |---|---|
+| `ConnectionStrings:Default` | Postgres connection (Npgsql `Host=…;Database=…;Username=…;Password=…;SSL Mode=Require` format). Stores extracted articles so they survive restarts. Use Neon's pooled host. |
+| `ConnectionStrings:Migrations` | Optional direct (non-pooler) connection used to apply migrations; defaults to `Default`. |
+| `Database:MigrateOnStartup` | Apply pending migrations when the API starts (default `true`). |
 | `Images:SigningKey` | Secret used to sign `/api/img` URLs. Optional in development (a random key is generated per run, so image URLs from before a restart stop working until the page reloads). **Set it in production**, e.g. `dotnet user-secrets set "Images:SigningKey" "<long random string>"` locally or an app secret in Azure.
 
 ## Run
@@ -52,6 +56,25 @@ pnpm dev
 
 Vite proxies every `/api/*` request to `http://localhost:5088`, so the app at
 http://localhost:5173 talks to your local API.
+
+### Database
+
+Keep connection strings out of git with user-secrets:
+
+```sh
+cd server/Novashelf.Api
+dotnet user-secrets set "ConnectionStrings:Default" "Host=<pooler host>;Database=neondb;Username=…;Password=…;SSL Mode=Require"
+dotnet user-secrets set "ConnectionStrings:Migrations" "Host=<direct host>;Database=neondb;Username=…;Password=…;SSL Mode=Require"
+```
+
+Migrations are applied on startup. To add one after changing the model (from the repo root):
+
+```sh
+dotnet tool restore
+dotnet ef migrations add <Name> --project server/Novashelf.Api --output-dir Data/Migrations
+```
+
+Deploy the API in the same region as the database: every query is a network round trip.
 
 ## Test
 

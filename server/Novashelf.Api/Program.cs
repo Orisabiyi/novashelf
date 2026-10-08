@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Novashelf.Api.Data;
 using Novashelf.Api.Endpoints;
 using Novashelf.Api.Images;
 using Novashelf.Api.Infrastructure;
@@ -41,6 +42,7 @@ builder.Services.AddHttpClient<NasaImagesClient>(c =>
 }).AddStandardResilienceHandler();
 
 builder.Services.AddScoped<ContentResolver>();
+builder.Services.AddNovashelfDatabase(builder.Configuration);
 
 builder.Services.AddSingleton<ImageUrlSigner>();
 // Image originals can be large and slow (NASA's take minutes on slow links), hence the long timeout.
@@ -62,6 +64,8 @@ builder.Services.AddHttpClient<ReaderService>(c =>
 }).ConfigurePrimaryHttpMessageHandler(OutboundGuard.CreateHandler);
 
 var app = builder.Build();
+
+await app.MigrateDatabaseAsync();
 
 app.UseExceptionHandler();
 app.UseStatusCodePages();
