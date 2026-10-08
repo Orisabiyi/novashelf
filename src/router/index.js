@@ -1,3 +1,4 @@
+import ApodView from "@/views/ApodView.vue";
 import ExploreView from "@/views/ExploreView.vue";
 import HomeView from "@/views/HomeView.vue";
 import NotFound from "@/views/NotFound.vue";
@@ -25,6 +26,11 @@ const router = createRouter({
       path: "/explore",
       name: "explore",
       component: ExploreView,
+    },
+    {
+      path: "/apod",
+      name: "apod",
+      component: ApodView,
     },
     {
       path: "/read/:id",

@@ -60,6 +60,14 @@ export function getApod(date = null, options) {
   return apiGet("/apod", { date }, options);
 }
 
+/**
+ * Pictures of the Day, newest first, 24 per page.
+ * @returns {Promise<PagedResult<ContentItem>>}
+ */
+export function getApodArchive({ page = 1 } = {}, options) {
+  return apiGet("/apod/archive", { page }, options);
+}
+
 /** @returns {Promise<PagedResult<ContentItem>>} */
 export function searchImages({ q, page = 1 }, options) {
   return apiGet("/images", { q, page }, options);
