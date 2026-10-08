@@ -29,6 +29,7 @@ public static class ContentEndpoints
         api.MapGet("/content/{id}", GetContent);
         api.MapGet("/content/{id}/read", ReadContent);
         api.MapGet("/apod", GetApod);
+        api.MapGet("/apod/archive", GetApodArchive);
         api.MapGet("/images", SearchImages);
 
         return app;
@@ -90,14 +91,27 @@ public static class ContentEndpoints
         return item is null ? TypedResults.NotFound() : TypedResults.Ok(images.Proxied(item));
     }
 
+    private static async Task<Results<Ok<PagedResult<ContentItem>>, ProblemHttpResult>> GetApodArchive(
+        ApodClient apod, ImageUrlSigner images, ImageService imageCache, CancellationToken ct, int page = 1)
+    {
+        if (page is < 1 or > MaxPage) return BadRequest($"page must be between 1 and {MaxPage}");
+
+        var archive = await apod.GetArchivePageAsync(page, ct);
+        imageCache.Warm(archive.Items.Select(i => i.ImageUrl), CardImageWidth);
+        return TypedResults.Ok(images.Proxied(archive));
+    }
+
     private static async Task<Results<Ok<PagedResult<ContentItem>>, ProblemHttpResult>> SearchImages(
-        NasaImagesClient library, ImageUrlSigner images, CancellationToken ct, string? q = null, int page = 1)
+        NasaImagesClient library, ImageUrlSigner images, ImageService imageCache, CancellationToken ct,
+        string? q = null, int page = 1)
     {
         if (string.IsNullOrWhiteSpace(q) || q.Length > 100) return BadRequest("q is required (max 100 characters)");
         // The NASA API caps results at 10,000 hits.
         if (page is < 1 or > 10_000 / NasaImagesClient.PageSize) return BadRequest("page is out of range");
 
-        return TypedResults.Ok(images.Proxied(await library.SearchAsync(q, page, ct)));
+        var results = await library.SearchAsync(q, page, ct);
+        imageCache.Warm(results.Items.Select(i => i.ImageUrl), CardImageWidth);
+        return TypedResults.Ok(images.Proxied(results));
     }
 
     private static ProblemHttpResult BadRequest(string detail) =>

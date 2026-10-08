@@ -41,6 +41,39 @@ public sealed partial class ApodClient(HttpClient http, IMemoryCache cache, Time
         });
     }
 
+    public const int ArchivePageSize = 24;
+
+    /// <summary>The archive, newest first, <see cref="ArchivePageSize"/> pictures per page.</summary>
+    public async Task<PagedResult<ContentItem>> GetArchivePageAsync(int page, CancellationToken ct)
+    {
+        return (await cache.GetOrCreateAsync($"apod:archive:{page}", async entry =>
+        {
+            // The first page gains a picture each day; older pages only shift when it does.
+            entry.AbsoluteExpirationRelativeToNow = page == 1 ? LatestTtl : TimeSpan.FromHours(6);
+
+            using var response = await http.GetAsync($"apod-basic?per_page={ArchivePageSize}&page={page}", ct);
+            response.EnsureSuccessStatusCode();
+
+            var entries = await response.Content.ReadFromJsonAsync<List<ApodBasic>>(Json, ct) ?? [];
+            var totalPages = response.Headers.TryGetValues("X-WP-TotalPages", out var values)
+                && int.TryParse(values.FirstOrDefault(), out var total) ? total : page;
+
+            var items = new List<ContentItem>(entries.Count);
+            foreach (var apod in entries)
+            {
+                try
+                {
+                    items.Add(Map(apod));
+                }
+                catch (JsonException)
+                {
+                    // Skip a malformed entry rather than lose the whole page.
+                }
+            }
+            return new PagedResult<ContentItem>(items, page, page < totalPages && items.Count > 0);
+        }))!;
+    }
+
     public async Task<ContentItem?> GetAsync(DateOnly date, CancellationToken ct)
     {
         var today = DateOnly.FromDateTime(time.GetUtcNow().UtcDateTime);
