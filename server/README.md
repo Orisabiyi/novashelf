@@ -59,7 +59,14 @@ http://localhost:5173 talks to your local API.
 
 ### Database
 
-Keep connection strings out of git with user-secrets:
+Keep connection strings out of git with user-secrets. The easiest way is the helper, which asks
+for the `postgresql://…` URL from Neon without echoing it and sets both strings below:
+
+```sh
+./server/scripts/set-database.sh
+```
+
+Or set them by hand:
 
 ```sh
 cd server/Novashelf.Api
