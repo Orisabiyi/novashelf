@@ -18,6 +18,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<ReadingHistoryEntry> ReadingHistory => Set<ReadingHistoryEntry>();
 
+    public DbSet<UserTopic> UserTopics => Set<UserTopic>();
+
     protected override void OnModelCreating(ModelBuilder model)
     {
         base.OnModelCreating(model);
@@ -39,6 +41,16 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             entry.HasIndex(e => new { e.UserId, e.ReadAt });
             // Deleting an account deletes its history.
             entry.HasOne<AppUser>().WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        model.Entity<UserTopic>(topic =>
+        {
+            topic.ToTable("user_topics");
+            topic.HasKey(t => new { t.UserId, t.Slug });
+            topic.Property(t => t.UserId).HasColumnName("user_id");
+            topic.Property(t => t.Slug).HasColumnName("slug").HasMaxLength(40);
+            topic.Property(t => t.FollowedAt).HasColumnName("followed_at");
+            topic.HasOne<AppUser>().WithMany().HasForeignKey(t => t.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
         model.Entity<CachedArticle>(article =>

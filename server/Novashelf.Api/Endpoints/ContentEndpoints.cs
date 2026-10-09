@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Novashelf.Api.Accounts;
 using Novashelf.Api.Images;
@@ -11,6 +12,9 @@ namespace Novashelf.Api.Endpoints;
 public static class ContentEndpoints
 {
     private const int MaxPage = 500;
+
+    /// <summary>The <c>topic</c> value for a signed-in reader's followed topics.</summary>
+    public const string FollowingTopic = "following";
 
     // Image widths the front end asks for first; warming these makes first paint fast.
     private const int CardImageWidth = 640;
@@ -43,7 +47,19 @@ public static class ContentEndpoints
         if (page is < 1 or > MaxPage) return BadRequest($"page must be between 1 and {MaxPage}");
 
         IReadOnlyCollection<string>? keywords = null;
-        if (!string.IsNullOrWhiteSpace(topic))
+        if (string.Equals(topic, FollowingTopic, StringComparison.OrdinalIgnoreCase))
+        {
+            // Registered only when accounts are on.
+            var followed = context.RequestServices.GetService<FollowedTopics>();
+            var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (followed is null || userId is null)
+                return TypedResults.Problem(detail: "Sign in to see topics you follow.", statusCode: StatusCodes.Status401Unauthorized);
+
+            var topics = await followed.GetAsync(userId, ct);
+            if (topics.Count == 0) return TypedResults.Ok(new PagedResult<ContentItem>([], page, HasMore: false));
+            keywords = topics.SelectMany(t => t.Keywords).Distinct().ToList();
+        }
+        else if (!string.IsNullOrWhiteSpace(topic))
         {
             var match = Topics.Find(topic);
             if (match is null) return BadRequest($"Unknown topic '{topic}'");

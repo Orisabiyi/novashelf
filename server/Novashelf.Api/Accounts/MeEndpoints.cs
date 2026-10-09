@@ -12,6 +12,10 @@ public static class MeEndpoints
 {
     public sealed record RecordReadRequest(string? Id);
 
+    public sealed record TopicsRequest(List<string>? Topics);
+
+    public sealed record FollowedTopicsResponse(IEnumerable<string> Topics);
+
     public static IEndpointRouteBuilder MapMeEndpoints(this IEndpointRouteBuilder app)
     {
         var me = app.MapGroup("/api/me").RequireAuthorization();
@@ -20,6 +24,9 @@ public static class MeEndpoints
         me.MapPost("/history", RecordRead);
         me.MapDelete("/history", ClearHistory);
         me.MapDelete("/history/{id}", RemoveFromHistory);
+
+        me.MapGet("/topics", GetTopics);
+        me.MapPut("/topics", SetTopics);
 
         return app;
     }
@@ -67,5 +74,34 @@ public static class MeEndpoints
     {
         await history.RemoveAsync(users.GetUserId(context.User)!, id, ct);
         return TypedResults.NoContent();
+    }
+
+    private static async Task<Ok<FollowedTopicsResponse>> GetTopics(
+        HttpContext context, UserManager<AppUser> users, FollowedTopics followed, CancellationToken ct)
+    {
+        var topics = await followed.GetAsync(users.GetUserId(context.User)!, ct);
+        return TypedResults.Ok(new FollowedTopicsResponse(topics.Select(t => t.Slug)));
+    }
+
+    /// <summary>Replaces the whole list, so following or unfollowing is one idempotent request.</summary>
+    private static async Task<Results<Ok<FollowedTopicsResponse>, ProblemHttpResult>> SetTopics(
+        TopicsRequest request, HttpContext context, UserManager<AppUser> users, FollowedTopics followed,
+        CancellationToken ct)
+    {
+        var slugs = request.Topics ?? [];
+        if (slugs.Count > Topics.All.Count) return TypedResults.Problem(detail: "Too many topics", statusCode: 400);
+
+        var topics = new List<Topic>();
+        foreach (var slug in slugs.Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            if (Topics.Find(slug ?? "") is not { } topic)
+                return TypedResults.Problem(detail: $"Unknown topic '{slug}'", statusCode: 400);
+            topics.Add(topic);
+        }
+
+        var userId = users.GetUserId(context.User)!;
+        await followed.SetAsync(userId, topics, ct);
+        var saved = await followed.GetAsync(userId, ct);
+        return TypedResults.Ok(new FollowedTopicsResponse(saved.Select(t => t.Slug)));
     }
 }

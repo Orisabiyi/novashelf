@@ -324,6 +324,26 @@ namespace Novashelf.Api.Data.Migrations
                     b.ToTable("reading_history", (string)null);
                 });
 
+            modelBuilder.Entity("Novashelf.Api.Data.UserTopic", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text")
+                        .HasColumnName("user_id");
+
+                    b.Property<string>("Slug")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("slug");
+
+                    b.Property<DateTimeOffset>("FollowedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("followed_at");
+
+                    b.HasKey("UserId", "Slug");
+
+                    b.ToTable("user_topics", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -376,6 +396,15 @@ namespace Novashelf.Api.Data.Migrations
                 });
 
             modelBuilder.Entity("Novashelf.Api.Data.ReadingHistoryEntry", b =>
+                {
+                    b.HasOne("Novashelf.Api.Data.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Novashelf.Api.Data.UserTopic", b =>
                 {
                     b.HasOne("Novashelf.Api.Data.AppUser", null)
                         .WithMany()
