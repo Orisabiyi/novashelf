@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Novashelf.Api.Data;
 using Novashelf.Api.Images;
+using Novashelf.Api.Learn;
 using Novashelf.Api.Models;
 using Novashelf.Api.Sources;
 
@@ -19,6 +20,8 @@ public static class MeEndpoints
 
     public sealed record PreferencesDto(string? FontSize, string? Width, string? Theme);
 
+    public sealed record CompletedLesson(string Track, string Lesson, DateTimeOffset CompletedAt);
+
     public static IEndpointRouteBuilder MapMeEndpoints(this IEndpointRouteBuilder app)
     {
         var me = app.MapGroup("/api/me").RequireAuthorization();
@@ -33,6 +36,10 @@ public static class MeEndpoints
 
         me.MapGet("/preferences", GetPreferences);
         me.MapPut("/preferences", SetPreferences);
+
+        me.MapGet("/lessons", ListCompletedLessons);
+        me.MapPut("/lessons/{track}/{lesson}", CompleteLesson);
+        me.MapDelete("/lessons/{track}/{lesson}", UncompleteLesson);
 
         return app;
     }
@@ -166,5 +173,51 @@ public static class MeEndpoints
         saved.Theme = request.Theme!;
         saved.UpdatedAt = time.GetUtcNow();
         await db.SaveChangesAsync(ct);
+    }
+
+    private static async Task<Ok<List<CompletedLesson>>> ListCompletedLessons(
+        HttpContext context, UserManager<AppUser> users, AppDbContext db, CancellationToken ct)
+    {
+        var userId = users.GetUserId(context.User)!;
+        var completed = await db.LessonProgress
+            .Where(p => p.UserId == userId)
+            .OrderBy(p => p.CompletedAt)
+            .Select(p => new CompletedLesson(p.Track, p.Lesson, p.CompletedAt))
+            .ToListAsync(ct);
+        return TypedResults.Ok(completed);
+    }
+
+    /// <summary>Marks a lesson finished. Idempotent: finishing it again keeps the first date.</summary>
+    private static async Task<Results<NoContent, NotFound>> CompleteLesson(
+        string track, string lesson, HttpContext context, UserManager<AppUser> users, AppDbContext db,
+        Curriculum curriculum, TimeProvider time, CancellationToken ct)
+    {
+        if (curriculum.Find(track, lesson) is not { } found) return TypedResults.NotFound();
+
+        var userId = users.GetUserId(context.User)!;
+        var (trackSlug, lessonSlug) = (found.Track.Slug, found.Lesson.Slug);
+        if (await db.LessonProgress.AnyAsync(p => p.UserId == userId && p.Track == trackSlug && p.Lesson == lessonSlug, ct))
+            return TypedResults.NoContent();
+
+        db.LessonProgress.Add(new LessonProgress { UserId = userId, Track = trackSlug, Lesson = lessonSlug, CompletedAt = time.GetUtcNow() });
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException)
+        {
+            // Finished in another tab at the same moment; it's recorded either way.
+        }
+        return TypedResults.NoContent();
+    }
+
+    private static async Task<NoContent> UncompleteLesson(
+        string track, string lesson, HttpContext context, UserManager<AppUser> users, AppDbContext db, CancellationToken ct)
+    {
+        var userId = users.GetUserId(context.User)!;
+        await db.LessonProgress
+            .Where(p => p.UserId == userId && p.Track == track && p.Lesson == lesson)
+            .ExecuteDeleteAsync(ct);
+        return TypedResults.NoContent();
     }
 }

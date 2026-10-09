@@ -22,6 +22,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<UserPreferences> UserPreferences => Set<UserPreferences>();
 
+    public DbSet<LessonProgress> LessonProgress => Set<LessonProgress>();
+
     protected override void OnModelCreating(ModelBuilder model)
     {
         base.OnModelCreating(model);
@@ -65,6 +67,17 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             prefs.Property(p => p.Theme).HasColumnName("theme").HasMaxLength(10);
             prefs.Property(p => p.UpdatedAt).HasColumnName("updated_at");
             prefs.HasOne<AppUser>().WithOne().HasForeignKey<UserPreferences>(p => p.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        model.Entity<LessonProgress>(progress =>
+        {
+            progress.ToTable("lesson_progress");
+            progress.HasKey(p => new { p.UserId, p.Track, p.Lesson });
+            progress.Property(p => p.UserId).HasColumnName("user_id");
+            progress.Property(p => p.Track).HasColumnName("track").HasMaxLength(80);
+            progress.Property(p => p.Lesson).HasColumnName("lesson").HasMaxLength(80);
+            progress.Property(p => p.CompletedAt).HasColumnName("completed_at");
+            progress.HasOne<AppUser>().WithMany().HasForeignKey(p => p.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
         model.Entity<CachedArticle>(article =>

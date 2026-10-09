@@ -285,6 +285,31 @@ namespace Novashelf.Api.Data.Migrations
                     b.ToTable("cached_articles", (string)null);
                 });
 
+            modelBuilder.Entity("Novashelf.Api.Data.LessonProgress", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text")
+                        .HasColumnName("user_id");
+
+                    b.Property<string>("Track")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("track");
+
+                    b.Property<string>("Lesson")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("lesson");
+
+                    b.Property<DateTimeOffset>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
+                    b.HasKey("UserId", "Track", "Lesson");
+
+                    b.ToTable("lesson_progress", (string)null);
+                });
+
             modelBuilder.Entity("Novashelf.Api.Data.ReadingHistoryEntry", b =>
                 {
                     b.Property<long>("Id")
@@ -420,6 +445,15 @@ namespace Novashelf.Api.Data.Migrations
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.HasOne("Novashelf.Api.Data.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Novashelf.Api.Data.LessonProgress", b =>
                 {
                     b.HasOne("Novashelf.Api.Data.AppUser", null)
                         .WithMany()
