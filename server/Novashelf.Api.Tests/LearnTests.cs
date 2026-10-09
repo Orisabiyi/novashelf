@@ -182,4 +182,56 @@ public class LessonTextTests
         Assert.DoesNotContain("More", shortened);
         Assert.Contains("Intro", shortened);
     }
+
+    [Theory]
+    [InlineData("Big Bang News")]
+    [InlineData("Do NASA Science with Redshift Wrangler!")]
+    [InlineData("Discover More Topics From NASA")]
+    [InlineData("Keep Exploring")]
+    public void Trailing_nasa_promotions_are_removed(string heading)
+    {
+        var html = $"<p>The universe is expanding.</p><h2>{heading}</h2><p>Join now</p><h3>More</h3>";
+        Assert.Equal("<p>The universe is expanding.</p>", LessonText.RemoveTrailingPromotions(html));
+    }
+
+    [Fact]
+    public void Ordinary_headings_are_kept() =>
+        Assert.Contains("How it formed", LessonText.RemoveTrailingPromotions("<h2>How it formed</h2><p>Gas collapsed.</p>"));
+
+    [Fact]
+    public void Trailing_link_cards_and_their_headings_are_removed()
+    {
+        var html = "<h2>Surface</h2><p>It's very cold.</p>" +
+                   "<h3>Vikings 1 &amp; 2</h3><p>A pair of probes seeking signs of life. Read More</p>" +
+                   "<h3>Temperatures</h3><p>Compare the planets. Read the Story</p>";
+        Assert.Equal("<h2>Surface</h2><p>It's very cold.</p>", LessonText.RemoveTrailingPromotions(html));
+    }
+
+    [Fact]
+    public void A_paragraph_merely_mentioning_reading_is_kept() =>
+        Assert.Contains("We read the data", LessonText.RemoveTrailingPromotions("<p>We read the data carefully.</p>"));
+
+    [Fact]
+    public void Nasa_style_cards_with_images_are_removed_whole()
+    {
+        var html = "<h2>Missions</h2><p>Rovers have explored Mars since 1997.</p>" +
+                   "<figure><img src=\"https://x.org/viking.jpg\" alt=\"Viking\"></figure>" +
+                   "<h3>Vikings 1 &amp; 2</h3><p>The first U.S. mission to land safely on Mars.</p><p><a href=\"https://x.org\">Read More</a></p>" +
+                   "<figure><img src=\"https://x.org/mariner.jpg\" alt=\"Mariner 9\"></figure>";
+
+        Assert.Equal("<h2>Missions</h2><p>Rovers have explored Mars since 1997.</p>", LessonText.RemoveTrailingPromotions(html));
+    }
+
+    [Fact]
+    public void Stray_labels_after_cards_are_removed_and_cleanup_reaches_a_fixpoint()
+    {
+        var html = "<p>Hubble has made more than 1.5 million observations.</p>" +
+                   "<h3>Science Operations</h3><p>Hubble science operations schedules observations.</p>" +
+                   "<p><a href=\"https://x.org\">Read More</a></p><p>Featured Story</p>";
+        Assert.Equal("<p>Hubble has made more than 1.5 million observations.</p>", LessonText.RemoveTrailingPromotions(html));
+    }
+
+    [Fact]
+    public void A_short_final_sentence_is_not_mistaken_for_a_label() =>
+        Assert.Contains("It is huge.", LessonText.RemoveTrailingPromotions("<p>Jupiter is a gas giant.</p><p>It is huge.</p>"));
 }

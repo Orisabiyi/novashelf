@@ -34,7 +34,7 @@ public sealed class LessonService(
     ILogger<LessonService> logger)
 {
     /// <summary>Bump when cleaning rules change, so stored sections are rebuilt.</summary>
-    public const int FormatVersion = 1;
+    public const int FormatVersion = 6;
 
     private const int WordsPerMinute = 200;
     private static readonly TimeSpan MemoryTtl = TimeSpan.FromHours(12);
@@ -75,6 +75,8 @@ public sealed class LessonService(
     private LessonSection ToSection(LessonSource source, string? body)
     {
         var (shortened, truncated) = body is null ? (null, false) : LessonText.Shorten(body);
+        // Shortening can end the section on a mid-page link card; clean the new ending too.
+        if (truncated && shortened is not null) shortened = LessonText.RemoveTrailingPromotions(shortened);
         var html = shortened is null ? null : ArticleImages.Rewrite(shortened, images);
         var minutes = shortened is null ? 0 : Math.Max(1, (int)Math.Round(CountWords(shortened) / (double)WordsPerMinute));
 
@@ -140,10 +142,13 @@ public sealed class LessonService(
         try
         {
             if (source.Kind == LessonSource.Nasa)
-                return (await extractor.ExtractAsync(source.Url!, CancellationToken.None))?.Html;
+            {
+                var page = await extractor.ExtractAsync(source.Url!, CancellationToken.None);
+                return page is null ? null : LessonText.RemoveTrailingPromotions(page.Html);
+            }
 
-            var page = await extractor.FetchHtmlAsync(WikipediaArticles.ApiUrl(source.Page!), CancellationToken.None);
-            return page is null ? null : WikipediaArticles.Clean(page.Value.Html, source.Page!);
+            var article = await extractor.FetchHtmlAsync(WikipediaArticles.ApiUrl(source.Page!), CancellationToken.None);
+            return article is null ? null : WikipediaArticles.Clean(article.Value.Html, source.Page!);
         }
         catch (Exception ex)
         {

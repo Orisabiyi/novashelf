@@ -21,7 +21,7 @@ public static class WikipediaArticles
     private static readonly HashSet<string> SkippedSections = new(StringComparer.OrdinalIgnoreCase)
     {
         "References", "Notes", "Sources", "Other websites", "Related pages", "Further reading",
-        "External links", "See also", "Gallery", "Bibliography", "Footnotes",
+        "External links", "See also", "Gallery", "Bibliography", "Footnotes", "More reading",
     };
 
     private const string Clutter =

@@ -400,7 +400,7 @@
           ],
           "sources": [
             { "kind": "wikipedia", "page": "Space_telescope", "title": "Space observatory" },
-            { "kind": "nasa", "url": "https://science.nasa.gov/mission/hubble/", "title": "Hubble Space Telescope" }
+            { "kind": "nasa", "url": "https://science.nasa.gov/mission/hubble/overview/about-hubble/", "title": "About Hubble" }
           ]
         },
         {
@@ -432,7 +432,7 @@
           ],
           "sources": [
             { "kind": "wikipedia", "page": "Rover_(space_exploration)", "title": "Rover (space exploration)" },
-            { "kind": "nasa", "url": "https://science.nasa.gov/planetary-science/programs/mars-exploration/", "title": "Mars Exploration Program" }
+            { "kind": "nasa", "url": "https://science.nasa.gov/mission/mars-2020-perseverance/", "title": "Perseverance rover" }
           ]
         }
       ]
