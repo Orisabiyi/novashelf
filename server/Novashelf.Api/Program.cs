@@ -61,7 +61,8 @@ builder.Services.AddSingleton<ImageService>();
 
 // Fetches original article pages. No retries (a slow site shouldn't hold the reader up), a
 // timeout, and a handler that refuses to connect to private or internal addresses.
-builder.Services.AddHttpClient<ReaderService>(c =>
+builder.Services.AddScoped<ReaderService>();
+builder.Services.AddHttpClient<PageExtractor>(c =>
 {
     // Generous: some publishers (science.nasa.gov) take 10–20s, and each article is fetched once.
     c.Timeout = TimeSpan.FromSeconds(25);

@@ -1,0 +1,109 @@
+using System.Net.Http.Headers;
+using System.Text;
+using ReadabilityParser = SmartReader.Reader;
+
+namespace Novashelf.Api.Reading;
+
+/// <param name="Html">Sanitised body with original image URLs (proxy links are added when served).</param>
+public sealed record ExtractedPage(string Html, string? Byline, int ReadingMinutes);
+
+/// <summary>
+/// Fetches third-party pages and turns them into clean reader HTML. Used for news articles and for
+/// lesson sources. The HTTP client refuses private and internal addresses (see OutboundGuard).
+/// </summary>
+public sealed class PageExtractor(HttpClient http, ILogger<PageExtractor> logger)
+{
+    private const int MaxPageBytes = 5 * 1024 * 1024;
+    private const int MinArticleTextLength = 400;
+
+    /// <summary>The page's main content, via a Readability port, sanitised. Null if it can't be read.</summary>
+    public async Task<ExtractedPage?> ExtractAsync(string url, CancellationToken ct)
+    {
+        try
+        {
+            var page = await FetchHtmlAsync(url, ct);
+            if (page is null) return null;
+
+            var article = new ReadabilityParser(page.Value.FinalUrl, page.Value.Html).GetArticle();
+            if (!article.IsReadable || string.IsNullOrWhiteSpace(article.Content)) return null;
+            if ((article.TextContent?.Trim().Length ?? 0) < MinArticleTextLength) return null;
+
+            var body = ArticleSanitizer.Sanitize(article.Content, page.Value.FinalUrl);
+            var minutes = (int)Math.Round(article.TimeToRead.TotalMinutes);
+            var byline = FirstNonEmpty(article.Byline, article.Author);
+            return new ExtractedPage(body, byline, Math.Max(1, minutes));
+        }
+        catch (Exception ex) when (!ct.IsCancellationRequested)
+        {
+            // Network errors, refused private addresses, timeouts or a page the parser chokes on:
+            // callers fall back rather than fail.
+            logger.LogInformation(ex, "Extractor: couldn't extract {Url}", url);
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Downloads an HTML page (up to 5 MB). Returns the HTML and the address it ended up at after
+    /// redirects, or null when it isn't a successful HTML response.
+    /// </summary>
+    public async Task<(string Html, string FinalUrl)?> FetchHtmlAsync(string url, CancellationToken ct)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.Accept.ParseAdd("text/html,application/xhtml+xml;q=0.9,*/*;q=0.1");
+
+        using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogInformation("Extractor: {Url} returned {Status}", url, (int)response.StatusCode);
+            return null;
+        }
+
+        var mediaType = response.Content.Headers.ContentType?.MediaType;
+        if (mediaType is not null && !mediaType.Contains("html", StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        var html = await ReadLimitedAsync(response.Content, ct);
+        if (html is null)
+        {
+            logger.LogInformation("Extractor: {Url} is larger than {Max} bytes", url, MaxPageBytes);
+            return null;
+        }
+
+        // After redirects, resolve relative links against where the page actually lives.
+        return (html, response.RequestMessage?.RequestUri?.ToString() ?? url);
+    }
+
+    private static async Task<string?> ReadLimitedAsync(HttpContent content, CancellationToken ct)
+    {
+        if (content.Headers.ContentLength > MaxPageBytes) return null;
+
+        await using var stream = await content.ReadAsStreamAsync(ct);
+        using var buffer = new MemoryStream();
+        var chunk = new byte[81920];
+        int read;
+        while ((read = await stream.ReadAsync(chunk, ct)) > 0)
+        {
+            if (buffer.Length + read > MaxPageBytes) return null;
+            buffer.Write(chunk, 0, read);
+        }
+
+        return GetEncoding(content.Headers.ContentType).GetString(buffer.GetBuffer(), 0, (int)buffer.Length);
+    }
+
+    private static Encoding GetEncoding(MediaTypeHeaderValue? contentType)
+    {
+        try
+        {
+            return contentType?.CharSet is { Length: > 0 } charset
+                ? Encoding.GetEncoding(charset.Trim('"'))
+                : Encoding.UTF8;
+        }
+        catch (ArgumentException)
+        {
+            return Encoding.UTF8;
+        }
+    }
+
+    private static string? FirstNonEmpty(params string?[] values) =>
+        values.Select(v => v?.Trim()).FirstOrDefault(v => !string.IsNullOrEmpty(v));
+}
