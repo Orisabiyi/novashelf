@@ -9,6 +9,12 @@ public sealed record RegisterRequest(string? Email, string? Password, string? Fi
 /// <param name="Remember">Keep the reader signed in across browser restarts.</param>
 public sealed record LoginRequest(string? Email, string? Password, bool Remember = true);
 
+public sealed record UpdateAccountRequest(string? FirstName);
+
+public sealed record ChangePasswordRequest(string? CurrentPassword, string? NewPassword);
+
+public sealed record DeleteAccountRequest(string? Password);
+
 public sealed record AccountResponse(string Email, string? FirstName)
 {
     public static AccountResponse From(AppUser user) => new(user.Email!, user.FirstName);

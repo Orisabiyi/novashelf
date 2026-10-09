@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Novashelf.Api.Data;
@@ -25,6 +26,11 @@ public static class MeEndpoints
     public static IEndpointRouteBuilder MapMeEndpoints(this IEndpointRouteBuilder app)
     {
         var me = app.MapGroup("/api/me").RequireAuthorization();
+
+        // The account itself (GET /api/me is with sign-in, in AuthEndpoints).
+        app.MapPatch("/api/me", UpdateAccount).RequireAuthorization();
+        app.MapDelete("/api/me", DeleteAccount).RequireAuthorization().RequireRateLimiting(AccountSetup.AuthRateLimitPolicy);
+        me.MapPost("/password", ChangePassword).RequireRateLimiting(AccountSetup.AuthRateLimitPolicy);
 
         me.MapGet("/history", ListHistory);
         me.MapPost("/history", RecordRead);
@@ -220,4 +226,95 @@ public static class MeEndpoints
             .ExecuteDeleteAsync(ct);
         return TypedResults.NoContent();
     }
+
+    private static async Task<Results<Ok<AccountResponse>, ValidationProblem, UnauthorizedHttpResult>> UpdateAccount(
+        UpdateAccountRequest request, HttpContext context, UserManager<AppUser> users)
+    {
+        var firstName = AccountValidation.NormalizeFirstName(request.FirstName);
+        if ((firstName?.Length ?? 0) > AppUser.FirstNameMaxLength)
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["firstName"] = [$"Keep it under {AppUser.FirstNameMaxLength} characters."],
+            });
+
+        var user = await users.GetUserAsync(context.User);
+        if (user is null) return TypedResults.Unauthorized();
+
+        user.FirstName = firstName;
+        await users.UpdateAsync(user);
+        return TypedResults.Ok(AccountResponse.From(user));
+    }
+
+    private static async Task<Results<NoContent, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>> ChangePassword(
+        ChangePasswordRequest request, HttpContext context, UserManager<AppUser> users, SignInManager<AppUser> signIn)
+    {
+        var user = await users.GetUserAsync(context.User);
+        if (user is null) return TypedResults.Unauthorized();
+
+        var newPassword = request.NewPassword ?? "";
+        if (newPassword.Length is < AccountValidation.PasswordMinLength or > AccountValidation.PasswordMaxLength)
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["newPassword"] = [$"Use {AccountValidation.PasswordMinLength} to {AccountValidation.PasswordMaxLength} characters."],
+            });
+
+        switch (await CheckPasswordAsync(signIn, user, request.CurrentPassword))
+        {
+            case PasswordCheck.LockedOut: return TooManyAttempts();
+            case PasswordCheck.Wrong: return WrongPassword("currentPassword");
+        }
+
+        var result = await users.ChangePasswordAsync(user, request.CurrentPassword!, newPassword);
+        if (!result.Succeeded)
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["newPassword"] = result.Errors.Select(e => e.Description).ToArray(),
+            });
+
+        // The security stamp changed: re-issue this browser's cookie so it stays signed in.
+        // Sessions elsewhere are signed out when their stamp is next checked.
+        await signIn.RefreshSignInAsync(user);
+        return TypedResults.NoContent();
+    }
+
+    /// <summary>Deletes the account and everything stored for it (history, topics, settings, progress).</summary>
+    private static async Task<Results<NoContent, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>> DeleteAccount(
+        [FromBody] DeleteAccountRequest request, HttpContext context, UserManager<AppUser> users,
+        SignInManager<AppUser> signIn)
+    {
+        var user = await users.GetUserAsync(context.User);
+        if (user is null) return TypedResults.Unauthorized();
+
+        switch (await CheckPasswordAsync(signIn, user, request.Password))
+        {
+            case PasswordCheck.LockedOut: return TooManyAttempts();
+            case PasswordCheck.Wrong: return WrongPassword("password");
+        }
+
+        var result = await users.DeleteAsync(user);
+        if (!result.Succeeded)
+            return TypedResults.Problem(detail: "We couldn't delete your account. Please try again.", statusCode: 500);
+
+        await signIn.SignOutAsync();
+        return TypedResults.NoContent();
+    }
+
+    private enum PasswordCheck { Right, Wrong, LockedOut }
+
+    /// <summary>
+    /// Confirms the reader's password before a sensitive change. Wrong guesses count towards the
+    /// same lockout as sign-in.
+    /// </summary>
+    private static async Task<PasswordCheck> CheckPasswordAsync(SignInManager<AppUser> signIn, AppUser user, string? password)
+    {
+        var check = await signIn.CheckPasswordSignInAsync(user, password ?? "", lockoutOnFailure: true);
+        return check.IsLockedOut ? PasswordCheck.LockedOut : check.Succeeded ? PasswordCheck.Right : PasswordCheck.Wrong;
+    }
+
+    private static ProblemHttpResult TooManyAttempts() => TypedResults.Problem(
+        detail: "Too many attempts. Wait a few minutes and try again.",
+        statusCode: StatusCodes.Status429TooManyRequests);
+
+    private static ValidationProblem WrongPassword(string field) => TypedResults.ValidationProblem(
+        new Dictionary<string, string[]> { [field] = ["That password isn't right."] });
 }
