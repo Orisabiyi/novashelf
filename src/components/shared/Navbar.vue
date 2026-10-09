@@ -31,6 +31,11 @@ const navLinks = [
     to: "/images",
     isActive: () => route.path.startsWith("/images"),
   },
+  {
+    name: "Learn",
+    to: "/learn",
+    isActive: () => route.path.startsWith("/learn"),
+  },
 ];
 
 const menuOpen = ref(false);

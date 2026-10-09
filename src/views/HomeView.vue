@@ -6,6 +6,7 @@ import ContentCard from "@/components/content/ContentCard.vue";
 import ContentCardSkeleton from "@/components/content/ContentCardSkeleton.vue";
 import ApodFeature from "@/components/home/ApodFeature.vue";
 import StarField from "@/components/home/StarField.vue";
+import StartHereBanner from "@/components/home/StartHereBanner.vue";
 import TopicGrid from "@/components/home/TopicGrid.vue";
 import WelcomeBack from "@/components/home/WelcomeBack.vue";
 import { useAuth } from "@/composables/useAuth";
@@ -107,6 +108,8 @@ onMounted(() => {
         </div>
       </div>
     </section>
+
+    <StartHereBanner />
 
     <section
       class="px-6 py-12 lg:px-10 2xl:px-48 space-y-6"

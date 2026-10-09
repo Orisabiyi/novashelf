@@ -2,10 +2,13 @@ import ApodView from "@/views/ApodView.vue";
 import ExploreView from "@/views/ExploreView.vue";
 import HomeView from "@/views/HomeView.vue";
 import ImagesView from "@/views/ImagesView.vue";
+import LearnView from "@/views/LearnView.vue";
+import LessonView from "@/views/LessonView.vue";
 import LoginView from "@/views/LoginView.vue";
 import NotFound from "@/views/NotFound.vue";
 import Onboard from "@/views/Onboard.vue";
 import ReaderView from "@/views/ReaderView.vue";
+import TrackView from "@/views/TrackView.vue";
 import { createRouter, createWebHistory } from "vue-router";
 import { loadSession, useAuth } from "@/composables/useAuth";
 
@@ -39,6 +42,21 @@ const router = createRouter({
       path: "/images",
       name: "images",
       component: ImagesView,
+    },
+    {
+      path: "/learn",
+      name: "learn",
+      component: LearnView,
+    },
+    {
+      path: "/learn/:track",
+      name: "track",
+      component: TrackView,
+    },
+    {
+      path: "/learn/:track/:lesson",
+      name: "lesson",
+      component: LessonView,
     },
     {
       path: "/read/:id",
@@ -83,7 +101,8 @@ router.beforeEach(async (to) => {
 
 // Pages that know their own title (the reader) set it; everything else gets the default.
 router.afterEach((to) => {
-  if (to.name !== "read") document.title = "Novashelf";
+  // These pages set their own title once their content loads.
+  if (!["read", "track", "lesson"].includes(String(to.name))) document.title = "Novashelf";
 });
 
 export default router;
