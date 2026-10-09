@@ -1,13 +1,29 @@
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Novashelf.Api.Data;
 
-public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+/// <summary>
+/// The app's database: reader accounts (ASP.NET Core Identity), the keys that encrypt sign-in
+/// cookies (so sessions survive restarts and scale-to-zero), and cached articles.
+/// </summary>
+public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
+    : IdentityDbContext<AppUser>(options), IDataProtectionKeyContext
 {
     public DbSet<CachedArticle> CachedArticles => Set<CachedArticle>();
 
+    public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
+
     protected override void OnModelCreating(ModelBuilder model)
     {
+        base.OnModelCreating(model);
+
+        model.Entity<AppUser>(user =>
+        {
+            user.Property(u => u.FirstName).HasMaxLength(AppUser.FirstNameMaxLength);
+        });
+
         model.Entity<CachedArticle>(article =>
         {
             article.ToTable("cached_articles");

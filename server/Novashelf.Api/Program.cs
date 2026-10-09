@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Novashelf.Api.Accounts;
 using Novashelf.Api.Data;
 using Novashelf.Api.Endpoints;
 using Novashelf.Api.Images;
@@ -44,6 +45,10 @@ builder.Services.AddHttpClient<NasaImagesClient>(c =>
 builder.Services.AddScoped<ContentResolver>();
 builder.Services.AddNovashelfDatabase(builder.Configuration);
 
+// Accounts need somewhere to live; without a database the rest of the API still works.
+var accountsEnabled = !string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("Default"));
+if (accountsEnabled) builder.Services.AddNovashelfAccounts(builder.Environment);
+
 builder.Services.AddSingleton<ImageUrlSigner>();
 // Image originals can be large and slow (NASA's take minutes on slow links), hence the long timeout.
 builder.Services.AddHttpClient(ImageService.HttpClientName, c =>
@@ -70,7 +75,15 @@ await app.MigrateDatabaseAsync();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 
+if (accountsEnabled)
+{
+    app.UseRateLimiter();
+    app.UseAuthentication();
+    app.UseAuthorization();
+}
+
 app.MapContentEndpoints();
 app.MapImageEndpoints();
+app.MapAuthEndpoints(accountsEnabled);
 
 app.Run();
