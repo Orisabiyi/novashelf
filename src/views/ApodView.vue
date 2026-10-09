@@ -5,6 +5,7 @@ import { getApod, getApodArchive } from "@/api/content";
 import PhotoTile from "@/components/content/PhotoTile.vue";
 import { useInfiniteScroll } from "@/composables/useInfiniteScroll";
 import { usePagedList } from "@/composables/usePagedList";
+import { markRead } from "@/composables/useReadState";
 import {
   APOD_FIRST_DATE,
   addDays,
@@ -48,6 +49,7 @@ async function load(date) {
     if (id !== requestId) return;
     picture.value = result;
     if (!date) latestDate.value = apodDate(result.id);
+    markRead(result.id);
   } catch (e) {
     if (id === requestId) {
       error.value = e;

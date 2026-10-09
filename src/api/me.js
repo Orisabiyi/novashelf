@@ -1,0 +1,21 @@
+import { apiGet, apiSend } from "@/api/client";
+
+// The signed-in reader's own data (/api/me). All of these need a session.
+
+/** @returns {Promise<import("@/api/content").PagedResult<{ item: import("@/api/content").ContentItem, readAt: string }>>} */
+export function getHistory({ page = 1 } = {}, options) {
+  return apiGet("/me/history", { page }, options);
+}
+
+/** Record that the reader opened an item (called by the reader once it's actually open). */
+export function recordRead(id) {
+  return apiSend("POST", "/me/history", { id });
+}
+
+export function removeFromHistory(id) {
+  return apiSend("DELETE", `/me/history/${encodeURIComponent(id)}`);
+}
+
+export function clearHistory() {
+  return apiSend("DELETE", "/me/history");
+}

@@ -129,6 +129,13 @@ async function handleSignOut() {
             Signed in as<br />
             <span class="text-sm text-on-nav break-all">{{ account?.email }}</span>
           </p>
+          <RouterLink
+            to="/history"
+            class="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium hover:bg-on-nav/10"
+            @click="accountOpen = false">
+            <i class="pi pi-history" style="font-size: 0.8rem" aria-hidden="true"></i>
+            Reading history
+          </RouterLink>
           <button
             type="button"
             class="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium hover:bg-on-nav/10"
@@ -186,6 +193,12 @@ async function handleSignOut() {
       <template v-if="isSignedIn">
         <li class="mt-1 border-t border-on-nav/10 px-4 pt-3 pb-1 text-sm text-on-nav-muted">
           Signed in as <span class="text-on-nav break-all">{{ account?.email }}</span>
+        </li>
+        <li>
+          <RouterLink to="/history" class="flex items-center gap-2 rounded-2xl px-4 py-3 font-medium text-on-nav-muted">
+            <i class="pi pi-history" style="font-size: 0.85rem" aria-hidden="true"></i>
+            Reading history
+          </RouterLink>
         </li>
         <li>
           <button

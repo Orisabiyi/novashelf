@@ -57,3 +57,8 @@ export function formatFullDate(iso) {
 export function formatShortDate(iso) {
   return isIsoDate(iso) ? shortDate.format(new Date(`${iso}T00:00:00Z`)) : "";
 }
+
+/** Where an item opens: APOD pictures on the Picture of the day page, everything else in the reader. */
+export function itemLink(item) {
+  return item.kind === "apod" ? { path: "/apod", query: { date: apodDate(item.id) } } : `/read/${item.id}`;
+}

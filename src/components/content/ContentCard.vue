@@ -4,6 +4,7 @@ import { RouterLink } from "vue-router";
 import { prefetchReadable, rememberPreview } from "@/api/readerCache";
 import { formatRelativeDate } from "@/utils/format";
 import { imageAt, imageSrcset } from "@/utils/images";
+import { isRead } from "@/composables/useReadState";
 import { itemTag } from "@/utils/topics";
 
 const props = defineProps({
@@ -52,6 +53,7 @@ const meta = computed(() =>
     .join(" · "),
 );
 
+const read = computed(() => isRead(props.item));
 const isFeature = computed(() => props.variant === "feature");
 const isCompact = computed(() => props.variant === "compact");
 </script>
@@ -91,15 +93,24 @@ const isCompact = computed(() => props.variant === "compact");
         'flex-1 flex flex-col items-start gap-3 px-2 pb-2',
         isFeature && 'lg:justify-center lg:py-4 lg:pr-4',
       ]">
-      <span
-        class="inline-flex items-center gap-1.5 rounded-full bg-slate text-on-slate px-2.5 py-1 text-xs font-medium">
-        <i :class="`pi ${tag.icon}`" style="font-size: 0.75rem" aria-hidden="true"></i>
-        {{ tag.label }}
-      </span>
+      <div class="flex flex-wrap items-center gap-2">
+        <span
+          class="inline-flex items-center gap-1.5 rounded-full bg-slate text-on-slate px-2.5 py-1 text-xs font-medium">
+          <i :class="`pi ${tag.icon}`" style="font-size: 0.75rem" aria-hidden="true"></i>
+          {{ tag.label }}
+        </span>
+        <span
+          v-if="read"
+          class="inline-flex items-center gap-1 rounded-full border border-line-strong px-2.5 py-0.5 text-xs font-medium text-muted">
+          <i class="pi pi-check" style="font-size: 0.65rem" aria-hidden="true"></i>
+          Read
+        </span>
+      </div>
 
       <h3
         :class="[
           'font-bold tracking-tight text-balance group-hover:text-link transition-colors',
+          read && 'text-muted',
           isFeature ? 'text-2xl lg:text-3xl leading-[1.1]' : 'text-xl leading-snug',
           isCompact ? 'text-lg line-clamp-3' : 'line-clamp-4',
         ]">
@@ -124,7 +135,7 @@ const isCompact = computed(() => props.variant === "compact");
         <span
           class="inline-flex items-center gap-1.5 rounded-full border border-line-strong px-3 py-1 text-xs font-medium transition-colors group-hover:border-link group-hover:text-link">
           <i class="pi pi-arrow-right" style="font-size: 0.7rem" aria-hidden="true"></i>
-          Read
+          {{ read ? "Read again" : "Read" }}
         </span>
         <span v-if="meta" class="text-xs text-muted truncate">{{ meta }}</span>
       </div>

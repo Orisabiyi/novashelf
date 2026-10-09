@@ -61,6 +61,17 @@ export function apiPost(path, body) {
   return request("POST", path, { body });
 }
 
+/**
+ * Any method with an optional JSON body (PUT, PATCH, DELETE…).
+ *
+ * @param {"POST" | "PUT" | "PATCH" | "DELETE"} method
+ * @param {string} path
+ * @param {unknown} [body]
+ */
+export function apiSend(method, path, body) {
+  return request(method, path, { body });
+}
+
 async function request(method, path, { body, signal } = {}) {
   let response;
   try {

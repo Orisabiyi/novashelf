@@ -5,6 +5,7 @@ import { getApod, getFeed } from "@/api/content";
 import ContentCard from "@/components/content/ContentCard.vue";
 import ContentCardSkeleton from "@/components/content/ContentCardSkeleton.vue";
 import ApodFeature from "@/components/home/ApodFeature.vue";
+import ContinueReading from "@/components/home/ContinueReading.vue";
 import StarField from "@/components/home/StarField.vue";
 import StartHereBanner from "@/components/home/StartHereBanner.vue";
 import TopicGrid from "@/components/home/TopicGrid.vue";
@@ -108,6 +109,8 @@ onMounted(() => {
         </div>
       </div>
     </section>
+
+    <ContinueReading v-if="isSignedIn" />
 
     <StartHereBanner />
 

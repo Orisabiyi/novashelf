@@ -3,6 +3,7 @@ import { computed, ref } from "vue";
 import { RouterLink } from "vue-router";
 import { prefetchReadable, rememberPreview } from "@/api/readerCache";
 import { imageAt, imageSrcset } from "@/utils/images";
+import { isRead } from "@/composables/useReadState";
 
 const props = defineProps({
   /** @type {import("@/api/content").ContentItem} */
@@ -68,6 +69,14 @@ function onOpen() {
     <div v-else class="absolute inset-0 grid place-items-center p-4 text-center">
       <i class="pi pi-star text-brand" style="font-size: 1.5rem" aria-hidden="true"></i>
     </div>
+
+    <span
+      v-if="isRead(item)"
+      class="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-xs font-medium text-white backdrop-blur"
+      title="You've opened this">
+      <i class="pi pi-check" style="font-size: 0.6rem" aria-hidden="true"></i>
+      Read
+    </span>
 
     <!-- Text sits on a dark scrim over the photo, so it's white in either theme. -->
     <div

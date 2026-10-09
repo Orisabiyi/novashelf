@@ -1,5 +1,6 @@
 import ApodView from "@/views/ApodView.vue";
 import ExploreView from "@/views/ExploreView.vue";
+import HistoryView from "@/views/HistoryView.vue";
 import HomeView from "@/views/HomeView.vue";
 import ImagesView from "@/views/ImagesView.vue";
 import LearnView from "@/views/LearnView.vue";
@@ -62,6 +63,12 @@ const router = createRouter({
       path: "/read/:id",
       name: "read",
       component: ReaderView,
+    },
+    {
+      path: "/history",
+      name: "history",
+      component: HistoryView,
+      meta: { requiresAuth: true },
     },
     {
       path: "/sign-up",

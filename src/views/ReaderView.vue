@@ -4,6 +4,7 @@ import { RouterLink, useRoute, useRouter } from "vue-router";
 import DOMPurify from "dompurify";
 import { READER_HERO_WIDTH, getPreview, loadReadable } from "@/api/readerCache";
 import ReaderSettings from "@/components/reader/ReaderSettings.vue";
+import { markRead } from "@/composables/useReadState";
 import { FONT_SIZES, WIDTHS, useReaderPreferences } from "@/composables/useReaderPreferences";
 import { formatLongDate, formatRelativeDate } from "@/utils/format";
 import { imageAt, originalSource } from "@/utils/images";
@@ -48,6 +49,8 @@ async function load(id) {
     if (currentId !== id) return;
     readable.value = result;
     document.title = `${result.item.title} · Novashelf`;
+    // Now it's genuinely being read (prefetching on hover never records anything).
+    markRead(result.item.id);
   } catch (e) {
     if (currentId === id) error.value = e;
   } finally {
