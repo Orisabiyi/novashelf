@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Novashelf.Api.Data;
 using Novashelf.Api.Images;
 using Novashelf.Api.Models;
@@ -16,6 +17,8 @@ public static class MeEndpoints
 
     public sealed record FollowedTopicsResponse(IEnumerable<string> Topics);
 
+    public sealed record PreferencesDto(string? FontSize, string? Width, string? Theme);
+
     public static IEndpointRouteBuilder MapMeEndpoints(this IEndpointRouteBuilder app)
     {
         var me = app.MapGroup("/api/me").RequireAuthorization();
@@ -27,6 +30,9 @@ public static class MeEndpoints
 
         me.MapGet("/topics", GetTopics);
         me.MapPut("/topics", SetTopics);
+
+        me.MapGet("/preferences", GetPreferences);
+        me.MapPut("/preferences", SetPreferences);
 
         return app;
     }
@@ -103,5 +109,62 @@ public static class MeEndpoints
         await followed.SetAsync(userId, topics, ct);
         var saved = await followed.GetAsync(userId, ct);
         return TypedResults.Ok(new FollowedTopicsResponse(saved.Select(t => t.Slug)));
+    }
+
+    /// <summary>The saved reading settings, or 204 when the reader hasn't saved any yet.</summary>
+    private static async Task<Results<Ok<PreferencesDto>, NoContent>> GetPreferences(
+        HttpContext context, UserManager<AppUser> users, AppDbContext db, CancellationToken ct)
+    {
+        var userId = users.GetUserId(context.User)!;
+        var saved = await db.UserPreferences.AsNoTracking().FirstOrDefaultAsync(p => p.UserId == userId, ct);
+        return saved is null
+            ? TypedResults.NoContent()
+            : TypedResults.Ok(new PreferencesDto(saved.FontSize, saved.Width, saved.Theme));
+    }
+
+    private static async Task<Results<Ok<PreferencesDto>, ValidationProblem>> SetPreferences(
+        PreferencesDto request, HttpContext context, UserManager<AppUser> users, AppDbContext db,
+        TimeProvider time, CancellationToken ct)
+    {
+        var errors = new Dictionary<string, string[]>();
+        void Check(string field, string? value, string[] allowed)
+        {
+            if (value is null || !allowed.Contains(value))
+                errors[field] = [$"{field} must be one of: {string.Join(", ", allowed)}."];
+        }
+        Check("fontSize", request.FontSize, Data.UserPreferences.FontSizes);
+        Check("width", request.Width, Data.UserPreferences.Widths);
+        Check("theme", request.Theme, Data.UserPreferences.Themes);
+        if (errors.Count > 0) return TypedResults.ValidationProblem(errors);
+
+        var userId = users.GetUserId(context.User)!;
+        try
+        {
+            await SavePreferencesAsync(db, userId, request, time, ct);
+        }
+        catch (DbUpdateException)
+        {
+            // Another tab created the row first: update it instead.
+            db.ChangeTracker.Clear();
+            await SavePreferencesAsync(db, userId, request, time, ct);
+        }
+
+        return TypedResults.Ok(request);
+    }
+
+    private static async Task SavePreferencesAsync(
+        AppDbContext db, string userId, PreferencesDto request, TimeProvider time, CancellationToken ct)
+    {
+        var saved = await db.UserPreferences.FirstOrDefaultAsync(p => p.UserId == userId, ct);
+        if (saved is null)
+        {
+            saved = new UserPreferences { UserId = userId, FontSize = "", Width = "", Theme = "" };
+            db.UserPreferences.Add(saved);
+        }
+        saved.FontSize = request.FontSize!;
+        saved.Width = request.Width!;
+        saved.Theme = request.Theme!;
+        saved.UpdatedAt = time.GetUtcNow();
+        await db.SaveChangesAsync(ct);
     }
 }

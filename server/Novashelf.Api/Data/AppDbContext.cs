@@ -20,6 +20,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<UserTopic> UserTopics => Set<UserTopic>();
 
+    public DbSet<UserPreferences> UserPreferences => Set<UserPreferences>();
+
     protected override void OnModelCreating(ModelBuilder model)
     {
         base.OnModelCreating(model);
@@ -51,6 +53,18 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             topic.Property(t => t.Slug).HasColumnName("slug").HasMaxLength(40);
             topic.Property(t => t.FollowedAt).HasColumnName("followed_at");
             topic.HasOne<AppUser>().WithMany().HasForeignKey(t => t.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        model.Entity<UserPreferences>(prefs =>
+        {
+            prefs.ToTable("user_preferences");
+            prefs.HasKey(p => p.UserId);
+            prefs.Property(p => p.UserId).HasColumnName("user_id");
+            prefs.Property(p => p.FontSize).HasColumnName("font_size").HasMaxLength(10);
+            prefs.Property(p => p.Width).HasColumnName("width").HasMaxLength(10);
+            prefs.Property(p => p.Theme).HasColumnName("theme").HasMaxLength(10);
+            prefs.Property(p => p.UpdatedAt).HasColumnName("updated_at");
+            prefs.HasOne<AppUser>().WithOne().HasForeignKey<UserPreferences>(p => p.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
         model.Entity<CachedArticle>(article =>

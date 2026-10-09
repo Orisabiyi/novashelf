@@ -324,6 +324,39 @@ namespace Novashelf.Api.Data.Migrations
                     b.ToTable("reading_history", (string)null);
                 });
 
+            modelBuilder.Entity("Novashelf.Api.Data.UserPreferences", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text")
+                        .HasColumnName("user_id");
+
+                    b.Property<string>("FontSize")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("font_size");
+
+                    b.Property<string>("Theme")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("theme");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("Width")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("width");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("user_preferences", (string)null);
+                });
+
             modelBuilder.Entity("Novashelf.Api.Data.UserTopic", b =>
                 {
                     b.Property<string>("UserId")
@@ -400,6 +433,15 @@ namespace Novashelf.Api.Data.Migrations
                     b.HasOne("Novashelf.Api.Data.AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Novashelf.Api.Data.UserPreferences", b =>
+                {
+                    b.HasOne("Novashelf.Api.Data.AppUser", null)
+                        .WithOne()
+                        .HasForeignKey("Novashelf.Api.Data.UserPreferences", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
