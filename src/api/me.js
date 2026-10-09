@@ -29,3 +29,12 @@ export function getFollowedTopics() {
 export function setFollowedTopics(topics) {
   return apiSend("PUT", "/me/topics", { topics });
 }
+
+/** @returns {Promise<{ fontSize: string, width: string, theme: string } | null>} null until first saved */
+export function getPreferences() {
+  return apiGet("/me/preferences");
+}
+
+export function savePreferences(preferences) {
+  return apiSend("PUT", "/me/preferences", preferences);
+}
