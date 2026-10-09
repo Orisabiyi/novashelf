@@ -75,7 +75,7 @@ builder.Services.AddHttpClient<PageExtractor>(c =>
     c.DefaultRequestHeaders.UserAgent.ParseAdd($"Mozilla/5.0 (compatible; {userAgent})");
 }).ConfigurePrimaryHttpMessageHandler(OutboundGuard.CreateHandler);
 
-// In production requests arrive through Vercel and then Azure's ingress, each adding itself to
+// In production requests arrive through Vercel and then the host's load balancer, each adding itself to
 // X-Forwarded-For. Without this every visitor would share the proxy's address, and the per-IP
 // sign-in limit would lock everyone out together. Proxy:Hops is the number of proxies to trust.
 builder.Services.Configure<ForwardedHeadersOptions>(options =>

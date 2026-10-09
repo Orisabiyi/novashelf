@@ -1,6 +1,6 @@
 # The Novashelf API. Build from the server/ directory:
 #   docker build -t novashelf-api .
-# Azure Container Apps builds this in the cloud, so Docker isn't needed locally.
+# Render builds this in the cloud (see render.yaml), so Docker isn't needed locally.
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src

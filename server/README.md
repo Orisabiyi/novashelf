@@ -25,8 +25,8 @@ or API keys are needed.
 | `ConnectionStrings:Default` | Postgres connection (Npgsql `Host=…;Database=…;Username=…;Password=…;SSL Mode=Require` format). Stores extracted articles so they survive restarts. Use Neon's pooled host. |
 | `ConnectionStrings:Migrations` | Optional direct (non-pooler) connection used to apply migrations; defaults to `Default`. |
 | `Database:MigrateOnStartup` | Apply pending migrations when the API starts (default `true`). |
-| `Images:SigningKey` | Secret used to sign `/api/img` URLs. Optional in development (a random key is generated per run, so image URLs from before a restart stop working until the page reloads). **Set it in production**, e.g. `dotnet user-secrets set "Images:SigningKey" "<long random string>"` locally or an app secret in Azure. |
-| `Proxy:Hops` | Number of proxies in front of the API whose `X-Forwarded-For` entries are trusted (default `2`: Vercel, then Azure's ingress). Used outside Development only, so the per-IP sign-in limit sees each visitor's own address. |
+| `Images:SigningKey` | Secret used to sign `/api/img` URLs. Optional in development (a random key is generated per run, so image URLs from before a restart stop working until the page reloads). **Set it in production**, e.g. `dotnet user-secrets set "Images:SigningKey" "<long random string>"` locally or an environment variable on the host (render.yaml generates one). |
+| `Proxy:Hops` | Number of proxies in front of the API whose `X-Forwarded-For` entries are trusted (default `2`: Vercel, then the host's load balancer). Used outside Development only, so the per-IP sign-in limit sees each visitor's own address. |
 
 ## Run
 
