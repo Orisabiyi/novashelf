@@ -1,40 +1,42 @@
 <script setup>
 const features = [
   {
+    icon: "pi pi-history",
+    text: "See what you've read and pick up where you left off.",
+  },
+  {
     icon: "pi pi-compass",
-    text: "Explore daily space content from NASA, straight to your feed.",
+    text: "Follow the topics you love, from Mars to the Moon, for a feed made for you.",
   },
   {
-    icon: "pi pi-bookmark-fill",
-    text: "Save articles and images to your personal reading list.",
+    icon: "pi pi-book",
+    text: "New to space? Learn the basics with short, beginner-friendly lessons.",
   },
   {
-    icon: "pi pi-lightbulb",
-    text: "Every article comes with a 'Simply Put' space explained like you're talking to a friend",
+    icon: "pi pi-sliders-h",
+    text: "Your reading settings follow you to every device.",
   },
   {
     icon: "pi pi-lock-open",
-    text: "Built by a curious mind, for curious minds. Open source and community-driven.",
+    text: "Free and open source. Built by a curious mind, for curious minds.",
   },
 ];
 </script>
 
 <template>
-  <div class="w-1/4 flex flex-col items-center gap-10">
-    <h2 class="text-3xl text-center font-medium">
-      <span>Get Started</span>
-      <span class="block">with NovaShelf</span>
+  <div class="w-full max-w-md flex flex-col gap-8">
+    <h2 class="font-display text-3xl font-bold text-balance">
+      Why create an account?
     </h2>
 
-    <ul class="space-y-10">
-      <li v-for="feature in features" class="flex items-center gap-2 text-lg">
-        <figure>
-          <i
-            :class="`${feature.icon} text-brand`"
-            style="font-size: 2rem"></i>
-        </figure>
-
-        <span>{{ feature.text }}</span>
+    <ul class="space-y-6">
+      <li v-for="feature in features" :key="feature.text" class="flex items-start gap-4 text-lg">
+        <span
+          class="grid size-10 shrink-0 place-items-center rounded-xl bg-brand/15 text-brand"
+          aria-hidden="true">
+          <i :class="feature.icon"></i>
+        </span>
+        <span class="pt-1.5">{{ feature.text }}</span>
       </li>
     </ul>
   </div>

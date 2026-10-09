@@ -5,7 +5,7 @@ import Signup from "@/components/auth/Signup.vue";
 
 <template>
   <section
-    class="flex-1 flex items-center justify-center gap-20 px-10 py-5 2xl:px-48">
+    class="flex-1 flex flex-col-reverse items-center justify-center gap-12 px-6 py-12 lg:flex-row lg:items-center lg:gap-20 lg:px-10 2xl:px-48">
     <NovashelfFeature />
     <Signup />
   </section>
