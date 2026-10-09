@@ -6,10 +6,15 @@ import { getFeed } from "@/api/content";
 import { getLesson } from "@/api/learn";
 import ContentCard from "@/components/content/ContentCard.vue";
 import ReaderSettings from "@/components/reader/ReaderSettings.vue";
+import { useAuth } from "@/composables/useAuth";
+import { loadLessonProgress, setCompleted, useLessonProgress } from "@/composables/useLessonProgress";
 import { FONT_SIZES, WIDTHS, useReaderPreferences } from "@/composables/useReaderPreferences";
 
 const route = useRoute();
 const preferences = useReaderPreferences();
+const { status, isSignedIn } = useAuth();
+const { isCompleted } = useLessonProgress();
+loadLessonProgress();
 
 const lesson = ref(null);
 const loading = ref(true);
@@ -62,6 +67,23 @@ const SOURCE_NAMES = { wikipedia: "Wikipedia", nasa: "NASA" };
 const sanitize = (html) =>
   DOMPurify.sanitize(html, { ADD_ATTR: ["target", "loading", "decoding", "referrerpolicy", "srcset", "sizes"] });
 
+const finished = computed(() => !!lesson.value && isCompleted(lesson.value.track.slug, lesson.value.lesson.slug));
+const progressError = ref("");
+
+async function markFinished(done) {
+  progressError.value = "";
+  try {
+    await setCompleted(lesson.value.track.slug, lesson.value.lesson.slug, done);
+  } catch (e) {
+    progressError.value = e.message;
+  }
+}
+
+// Moving on to the next lesson counts as finishing this one.
+function onNext() {
+  if (!finished.value) markFinished(true);
+}
+
 const totalMinutes = computed(() =>
   (lesson.value?.sections ?? []).reduce((sum, s) => sum + s.readingMinutes, 0) + 1,
 );
@@ -106,8 +128,12 @@ const totalMinutes = computed(() =>
       <template v-else-if="lesson">
         <div :class="['space-y-8 transition-opacity', loading && 'opacity-50']" :aria-busy="loading">
           <header class="space-y-3">
-            <p class="text-sm font-medium text-link">
+            <p class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-medium text-link">
               Lesson {{ lesson.number }} of {{ lesson.lessonsInTrack }} · {{ totalMinutes }} min
+              <span v-if="finished" class="inline-flex items-center gap-1 rounded-full bg-action text-on-action px-2.5 py-0.5 text-xs">
+                <i class="pi pi-check" style="font-size: 0.6rem" aria-hidden="true"></i>
+                Finished
+              </span>
             </p>
             <h1 class="font-display text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.05] tracking-tight text-balance">
               {{ lesson.lesson.title }}
@@ -175,6 +201,42 @@ const totalMinutes = computed(() =>
             </p>
           </section>
 
+          <!-- Finish the lesson -->
+          <div
+            v-if="isSignedIn"
+            :class="[
+              'flex flex-wrap items-center justify-between gap-4 rounded-2xl p-5 transition-colors',
+              finished ? 'bg-action/10 ring-1 ring-brand/40' : 'bg-surface',
+            ]">
+            <p class="flex items-center gap-3 font-medium">
+              <i
+                :class="`pi ${finished ? 'pi-check-circle text-brand' : 'pi-flag text-muted'}`"
+                style="font-size: 1.25rem"
+                aria-hidden="true"></i>
+              <span>{{ finished ? "You've finished this lesson." : "Got the key ideas?" }}</span>
+            </p>
+            <button
+              v-if="finished"
+              type="button"
+              class="rounded-full px-4 py-2 text-sm font-medium text-muted hover:text-ink"
+              @click="markFinished(false)">
+              Mark as not finished
+            </button>
+            <button
+              v-else
+              type="button"
+              class="inline-flex items-center gap-2 rounded-full bg-action text-on-action px-5 py-2.5 font-medium transition-transform hover:-translate-y-px"
+              @click="markFinished(true)">
+              <i class="pi pi-check" style="font-size: 0.8rem" aria-hidden="true"></i>
+              Mark as finished
+            </button>
+            <p v-if="progressError" role="alert" class="w-full text-sm text-brand">{{ progressError }}</p>
+          </div>
+          <p v-else-if="status === 'signedOut'" class="rounded-2xl bg-surface p-5 text-muted">
+            <RouterLink :to="{ path: '/login', query: { redirect: route.fullPath } }" class="font-medium text-link">Sign in</RouterLink>
+            to keep track of the lessons you finish.
+          </p>
+
           <!-- Previous / next -->
           <nav aria-label="Lessons" class="grid gap-3 border-t border-line pt-8 sm:grid-cols-2">
             <RouterLink
@@ -188,6 +250,7 @@ const totalMinutes = computed(() =>
             <RouterLink
               v-if="lesson.next"
               :to="`/learn/${lesson.next.track}/${lesson.next.slug}`"
+              @click="onNext"
               class="group flex flex-col gap-1 rounded-2xl bg-action/10 p-4 text-right ring-1 ring-brand/40 transition hover:ring-brand sm:col-start-2">
               <span class="text-xs font-medium text-muted">
                 Next{{ lesson.next.track !== lesson.track.slug ? ` · new path: ${lesson.next.trackTitle}` : "" }} →
@@ -197,6 +260,7 @@ const totalMinutes = computed(() =>
             <RouterLink
               v-else
               to="/learn"
+              @click="onNext"
               class="flex flex-col gap-1 rounded-2xl bg-surface p-4 text-right sm:col-start-2">
               <span class="text-xs font-medium text-muted">You've finished every lesson</span>
               <span class="font-display font-bold">Back to all paths →</span>

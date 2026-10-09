@@ -38,3 +38,12 @@ export function getPreferences() {
 export function savePreferences(preferences) {
   return apiSend("PUT", "/me/preferences", preferences);
 }
+
+/** @returns {Promise<{ track: string, lesson: string, completedAt: string }[]>} */
+export function getCompletedLessons() {
+  return apiGet("/me/lessons");
+}
+
+export function setLessonCompleted(track, lesson, completed) {
+  return apiSend(completed ? "PUT" : "DELETE", `/me/lessons/${encodeURIComponent(track)}/${encodeURIComponent(lesson)}`);
+}

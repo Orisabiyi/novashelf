@@ -2,8 +2,12 @@
 import { computed, ref, watch } from "vue";
 import { RouterLink, useRoute } from "vue-router";
 import { getTracks } from "@/api/learn";
+import TrackProgress from "@/components/learn/TrackProgress.vue";
+import { loadLessonProgress, useLessonProgress } from "@/composables/useLessonProgress";
 
 const route = useRoute();
+const { isCompleted, completedIn } = useLessonProgress();
+loadLessonProgress();
 const tracks = ref([]);
 const loading = ref(true);
 const error = ref(null);
@@ -24,6 +28,17 @@ watch(() => route.params.track, load, { immediate: true });
 const index = computed(() => tracks.value.findIndex((t) => t.slug === route.params.track));
 const track = computed(() => tracks.value[index.value] ?? null);
 const nextTrack = computed(() => tracks.value[index.value + 1] ?? null);
+
+// Pick up at the first lesson not yet finished.
+const resume = computed(() => {
+  const t = track.value;
+  if (!t) return null;
+  const done = completedIn(t);
+  if (done === 0) return { lesson: t.lessons[0], label: "Start with lesson 1" };
+  if (done === t.lessons.length) return { lesson: t.lessons[0], label: "Review from lesson 1" };
+  const i = t.lessons.findIndex((l) => !isCompleted(t.slug, l.slug));
+  return { lesson: t.lessons[i], label: `Continue with lesson ${i + 1}` };
+});
 
 watch(track, (t) => t && (document.title = `${t.title} · Learn · Novashelf`));
 </script>
@@ -62,6 +77,7 @@ watch(track, (t) => t && (document.title = `${t.title} · Learn · Novashelf`));
             </p>
             <h1 class="font-display text-4xl font-bold tracking-tight text-balance">{{ track.title }}</h1>
             <p class="text-lg text-muted">{{ track.summary }}</p>
+            <TrackProgress :track="track" class="max-w-sm pt-2" />
           </div>
         </header>
 
@@ -70,7 +86,16 @@ watch(track, (t) => t && (document.title = `${t.title} · Learn · Novashelf`));
             <RouterLink
               :to="`/learn/${track.slug}/${lesson.slug}`"
               class="group flex items-center gap-4 rounded-2xl bg-surface p-4 sm:p-5 ring-1 ring-transparent transition hover:ring-brand/60 focus-visible:outline-2 focus-visible:outline-link">
-              <span class="grid size-10 shrink-0 place-items-center rounded-full border border-line-strong font-display font-bold tabular-nums transition-colors group-hover:border-brand group-hover:text-brand">
+              <span
+                v-if="isCompleted(track.slug, lesson.slug)"
+                class="grid size-10 shrink-0 place-items-center rounded-full bg-action text-on-action"
+                :title="`Lesson ${i + 1}: finished`">
+                <i class="pi pi-check" style="font-size: 0.9rem" aria-hidden="true"></i>
+                <span class="sr-only">Lesson {{ i + 1 }}, finished</span>
+              </span>
+              <span
+                v-else
+                class="grid size-10 shrink-0 place-items-center rounded-full border border-line-strong font-display font-bold tabular-nums transition-colors group-hover:border-brand group-hover:text-brand">
                 {{ i + 1 }}
               </span>
               <span class="min-w-0 flex-1">
@@ -84,9 +109,9 @@ watch(track, (t) => t && (document.title = `${t.title} · Learn · Novashelf`));
 
         <div class="flex flex-wrap items-center justify-between gap-4">
           <RouterLink
-            :to="`/learn/${track.slug}/${track.lessons[0].slug}`"
+            :to="`/learn/${track.slug}/${resume.lesson.slug}`"
             class="inline-flex items-center gap-2 rounded-full bg-action text-on-action px-6 py-3 font-medium">
-            Start with lesson 1
+            {{ resume.label }}
             <i class="pi pi-arrow-right" style="font-size: 0.8rem" aria-hidden="true"></i>
           </RouterLink>
           <RouterLink v-if="nextTrack" :to="`/learn/${nextTrack.slug}`" class="text-sm font-medium text-muted hover:text-ink">

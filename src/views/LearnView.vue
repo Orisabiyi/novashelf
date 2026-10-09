@@ -2,8 +2,12 @@
 import { computed, onMounted, ref } from "vue";
 import { RouterLink } from "vue-router";
 import { getTracks } from "@/api/learn";
+import TrackProgress from "@/components/learn/TrackProgress.vue";
+import { loadLessonProgress, useLessonProgress } from "@/composables/useLessonProgress";
 
 const tracks = ref([]);
+const { isCompleted, completedIn } = useLessonProgress();
+loadLessonProgress();
 const loading = ref(true);
 const error = ref(null);
 
@@ -72,13 +76,20 @@ const lessonCount = computed(() => tracks.value.reduce((sum, t) => sum + t.lesso
               <li
                 v-for="(lesson, index) in startTrack.lessons"
                 :key="lesson.slug"
-                class="rounded-full bg-page px-3 py-1">
-                <span class="text-muted">{{ index + 1 }}.</span> {{ lesson.title }}
+                :class="['rounded-full px-3 py-1', isCompleted(startTrack.slug, lesson.slug) ? 'bg-brand/15 text-brand' : 'bg-page']">
+                <i
+                  v-if="isCompleted(startTrack.slug, lesson.slug)"
+                  class="pi pi-check mr-1"
+                  style="font-size: 0.7rem"
+                  aria-label="Finished:"></i>
+                <span v-else class="text-muted">{{ index + 1 }}.</span>
+                {{ lesson.title }}
               </li>
             </ol>
+            <TrackProgress :track="startTrack" class="max-w-sm pt-1" />
           </div>
           <span class="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-action text-on-action px-6 py-3 font-medium transition-transform group-hover:-translate-y-0.5 lg:self-center">
-            Start learning
+            {{ completedIn(startTrack) ? "Continue learning" : "Start learning" }}
             <i class="pi pi-arrow-right" style="font-size: 0.8rem" aria-hidden="true"></i>
           </span>
         </div>
@@ -99,7 +110,8 @@ const lessonCount = computed(() => tracks.value.reduce((sum, t) => sum + t.lesso
                 <h3 class="font-display text-xl font-bold">{{ track.title }}</h3>
                 <p class="text-muted">{{ track.summary }}</p>
               </div>
-              <p class="mt-auto flex items-center justify-between text-sm font-medium">
+              <TrackProgress :track="track" class="mt-auto" />
+              <p :class="['flex items-center justify-between text-sm font-medium', !completedIn(track) && 'mt-auto']">
                 <span class="text-muted">{{ track.lessons.length }} lessons</span>
                 <span class="inline-flex items-center gap-1.5 text-link">
                   Open
