@@ -49,6 +49,7 @@ builder.Services.AddNovashelfDatabase(builder.Configuration);
 // Accounts need somewhere to live; without a database the rest of the API still works.
 var accountsEnabled = !string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("Default"));
 if (accountsEnabled) builder.Services.AddNovashelfAccounts(builder.Environment);
+else builder.Services.AddSingleton<IReadMarkers, NoReadMarkers>();
 
 builder.Services.AddSingleton<ImageUrlSigner>();
 // Image originals can be large and slow (NASA's take minutes on slow links), hence the long timeout.
@@ -91,5 +92,6 @@ app.MapContentEndpoints();
 app.MapImageEndpoints();
 app.MapLearnEndpoints();
 app.MapAuthEndpoints(accountsEnabled);
+if (accountsEnabled) app.MapMeEndpoints();
 
 app.Run();

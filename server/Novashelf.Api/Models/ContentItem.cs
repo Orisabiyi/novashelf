@@ -19,6 +19,7 @@ public sealed record ContentItem(
     string? Url,
     string? Publisher,
     DateTimeOffset? PublishedAt,
-    TopicTag? Topic = null);
+    TopicTag? Topic = null,
+    bool? Read = null);
 
 public sealed record PagedResult<T>(IReadOnlyList<T> Items, int Page, bool HasMore);

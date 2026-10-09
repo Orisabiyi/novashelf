@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Novashelf.Api.Accounts;
 using Novashelf.Api.Images;
 using Novashelf.Api.Models;
 using Novashelf.Api.Reading;
@@ -37,7 +38,7 @@ public static class ContentEndpoints
 
     private static async Task<Results<Ok<PagedResult<ContentItem>>, ProblemHttpResult>> GetFeed(
         SpaceflightNewsClient articles, ImageUrlSigner images, ImageService imageCache, ReaderService reader,
-        CancellationToken ct, string? topic = null, int page = 1)
+        IReadMarkers readMarkers, HttpContext context, CancellationToken ct, string? topic = null, int page = 1)
     {
         if (page is < 1 or > MaxPage) return BadRequest($"page must be between 1 and {MaxPage}");
 
@@ -53,7 +54,7 @@ public static class ContentEndpoints
         imageCache.Warm(feed.Items.Select(i => i.ImageUrl), CardImageWidth);
         // The first cards on a page are the likeliest to be opened: have them ready.
         reader.Warm(feed.Items.Take(ArticlesWarmedPerPage));
-        return TypedResults.Ok(images.Proxied(feed));
+        return TypedResults.Ok(images.Proxied(await readMarkers.MarkAsync(context.User, feed, ct)));
     }
 
     private static async Task<Results<Ok<ContentItem>, NotFound>> GetContent(
@@ -92,18 +93,19 @@ public static class ContentEndpoints
     }
 
     private static async Task<Results<Ok<PagedResult<ContentItem>>, ProblemHttpResult>> GetApodArchive(
-        ApodClient apod, ImageUrlSigner images, ImageService imageCache, CancellationToken ct, int page = 1)
+        ApodClient apod, ImageUrlSigner images, ImageService imageCache, IReadMarkers readMarkers, HttpContext context,
+        CancellationToken ct, int page = 1)
     {
         if (page is < 1 or > MaxPage) return BadRequest($"page must be between 1 and {MaxPage}");
 
         var archive = await apod.GetArchivePageAsync(page, ct);
         imageCache.Warm(archive.Items.Select(i => i.ImageUrl), CardImageWidth);
-        return TypedResults.Ok(images.Proxied(archive));
+        return TypedResults.Ok(images.Proxied(await readMarkers.MarkAsync(context.User, archive, ct)));
     }
 
     private static async Task<Results<Ok<PagedResult<ContentItem>>, ProblemHttpResult>> SearchImages(
-        NasaImagesClient library, ImageUrlSigner images, ImageService imageCache, CancellationToken ct,
-        string? q = null, int page = 1)
+        NasaImagesClient library, ImageUrlSigner images, ImageService imageCache, IReadMarkers readMarkers,
+        HttpContext context, CancellationToken ct, string? q = null, int page = 1)
     {
         if (string.IsNullOrWhiteSpace(q) || q.Length > 100) return BadRequest("q is required (max 100 characters)");
         // The NASA API caps results at 10,000 hits.
@@ -111,7 +113,7 @@ public static class ContentEndpoints
 
         var results = await library.SearchAsync(q, page, ct);
         imageCache.Warm(results.Items.Select(i => i.ImageUrl), CardImageWidth);
-        return TypedResults.Ok(images.Proxied(results));
+        return TypedResults.Ok(images.Proxied(await readMarkers.MarkAsync(context.User, results, ct)));
     }
 
     private static ProblemHttpResult BadRequest(string detail) =>

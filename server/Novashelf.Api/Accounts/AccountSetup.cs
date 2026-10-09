@@ -72,6 +72,9 @@ public static class AccountSetup
 
         services.AddAuthorization();
 
+        services.AddScoped<ReadingHistory>();
+        services.AddScoped<IReadMarkers>(sp => sp.GetRequiredService<ReadingHistory>());
+
         // Per-IP limit on sign-in and sign-up, on top of per-account lockout.
         services.AddRateLimiter(options =>
         {

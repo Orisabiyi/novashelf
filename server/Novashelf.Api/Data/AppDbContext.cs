@@ -6,7 +6,8 @@ namespace Novashelf.Api.Data;
 
 /// <summary>
 /// The app's database: reader accounts (ASP.NET Core Identity), the keys that encrypt sign-in
-/// cookies (so sessions survive restarts and scale-to-zero), and cached articles.
+/// cookies (so sessions survive restarts and scale-to-zero), readers' personal data (history,
+/// topics, preferences, lesson progress) and cached articles.
 /// </summary>
 public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     : IdentityDbContext<AppUser>(options), IDataProtectionKeyContext
@@ -15,6 +16,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
+    public DbSet<ReadingHistoryEntry> ReadingHistory => Set<ReadingHistoryEntry>();
+
     protected override void OnModelCreating(ModelBuilder model)
     {
         base.OnModelCreating(model);
@@ -22,6 +25,20 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
         model.Entity<AppUser>(user =>
         {
             user.Property(u => u.FirstName).HasMaxLength(AppUser.FirstNameMaxLength);
+        });
+
+        model.Entity<ReadingHistoryEntry>(entry =>
+        {
+            entry.ToTable("reading_history");
+            entry.Property(e => e.Id).HasColumnName("id");
+            entry.Property(e => e.UserId).HasColumnName("user_id");
+            entry.Property(e => e.ContentId).HasColumnName("content_id").HasMaxLength(160);
+            entry.Property(e => e.Item).HasColumnName("item").HasColumnType("jsonb");
+            entry.Property(e => e.ReadAt).HasColumnName("read_at");
+            entry.HasIndex(e => new { e.UserId, e.ContentId }).IsUnique();
+            entry.HasIndex(e => new { e.UserId, e.ReadAt });
+            // Deleting an account deletes its history.
+            entry.HasOne<AppUser>().WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
         model.Entity<CachedArticle>(article =>
