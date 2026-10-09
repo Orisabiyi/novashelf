@@ -7,6 +7,10 @@ import ContentCardSkeleton from "@/components/content/ContentCardSkeleton.vue";
 import ApodFeature from "@/components/home/ApodFeature.vue";
 import StarField from "@/components/home/StarField.vue";
 import TopicGrid from "@/components/home/TopicGrid.vue";
+import WelcomeBack from "@/components/home/WelcomeBack.vue";
+import { useAuth } from "@/composables/useAuth";
+
+const { status, isSignedIn, displayName } = useAuth();
 
 // Two rows: [small, feature] then [feature, small], matching Explore.
 const LATEST_VARIANTS = ["stacked", "feature", "feature", "stacked"];
@@ -14,6 +18,8 @@ const LATEST_VARIANTS = ["stacked", "feature", "feature", "stacked"];
 const apod = ref(null);
 const apodLoading = ref(true);
 const latest = ref([]);
+/** Page 1 of the feed, used to count what's new for signed-in readers. */
+const feedItems = ref([]);
 const latestLoading = ref(true);
 
 onMounted(() => {
@@ -24,6 +30,7 @@ onMounted(() => {
 
   getFeed()
     .then((feed) => {
+      feedItems.value = feed.items;
       latest.value = feed.items
         .filter((item) => item.imageUrl)
         .slice(0, LATEST_VARIANTS.length);
@@ -46,7 +53,22 @@ onMounted(() => {
 
       <div
         class="relative grid items-center gap-12 px-6 pt-10 pb-24 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16 lg:px-10 lg:pt-16 lg:pb-32 2xl:px-48">
-        <div class="flex flex-col items-start gap-6">
+        <!-- Signed in: a personal welcome instead of the pitch. -->
+        <WelcomeBack
+          v-if="isSignedIn"
+          :name="displayName"
+          :articles="feedItems"
+          :loading="latestLoading" />
+
+        <!-- Still checking the session: hold the space without flashing the sign-up pitch. -->
+        <div v-else-if="status === 'unknown'" class="flex flex-col gap-6 animate-pulse" aria-hidden="true">
+          <div class="h-6 w-48 rounded-full bg-surface"></div>
+          <div class="h-16 w-4/5 rounded-xl bg-surface"></div>
+          <div class="h-16 w-3/5 rounded-xl bg-surface"></div>
+          <div class="h-5 w-full max-w-xl rounded bg-surface"></div>
+        </div>
+
+        <div v-else class="flex flex-col items-start gap-6">
           <span
             class="inline-flex items-center gap-2 rounded-full border border-line-strong bg-surface/60 backdrop-blur px-3 py-1 text-xs font-medium text-muted">
             <span class="size-1.5 rounded-full bg-brand" aria-hidden="true"></span>
@@ -72,6 +94,7 @@ onMounted(() => {
               <i class="pi pi-arrow-right" style="font-size: 0.8rem" aria-hidden="true"></i>
             </RouterLink>
             <RouterLink
+              v-if="status !== 'unavailable'"
               to="/sign-up"
               class="inline-flex items-center rounded-full border border-line-strong px-6 py-3 font-medium transition-colors hover:border-ink">
               Create a free account
