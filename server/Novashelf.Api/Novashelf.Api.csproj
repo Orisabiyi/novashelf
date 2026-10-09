@@ -26,4 +26,9 @@
     <InternalsVisibleTo Include="Novashelf.Api.Tests" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- The learning paths ship inside the API so the server only fetches sources listed there. -->
+    <EmbeddedResource Include="Learn/curriculum.json" LogicalName="Novashelf.Api.Learn.curriculum.json" />
+  </ItemGroup>
+
 </Project>

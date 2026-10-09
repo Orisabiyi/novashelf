@@ -6,6 +6,7 @@ using Novashelf.Api.Data;
 using Novashelf.Api.Endpoints;
 using Novashelf.Api.Images;
 using Novashelf.Api.Infrastructure;
+using Novashelf.Api.Learn;
 using Novashelf.Api.Reading;
 using Novashelf.Api.Sources;
 
@@ -62,6 +63,9 @@ builder.Services.AddSingleton<ImageService>();
 // Fetches original article pages. No retries (a slow site shouldn't hold the reader up), a
 // timeout, and a handler that refuses to connect to private or internal addresses.
 builder.Services.AddScoped<ReaderService>();
+// Loaded once at startup; an invalid curriculum.json stops the app with a clear message.
+builder.Services.AddSingleton(Curriculum.LoadEmbedded());
+builder.Services.AddScoped<LessonService>();
 builder.Services.AddHttpClient<PageExtractor>(c =>
 {
     // Generous: some publishers (science.nasa.gov) take 10–20s, and each article is fetched once.
@@ -85,6 +89,7 @@ if (accountsEnabled)
 
 app.MapContentEndpoints();
 app.MapImageEndpoints();
+app.MapLearnEndpoints();
 app.MapAuthEndpoints(accountsEnabled);
 
 app.Run();
