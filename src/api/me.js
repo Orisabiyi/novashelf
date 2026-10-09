@@ -19,3 +19,13 @@ export function removeFromHistory(id) {
 export function clearHistory() {
   return apiSend("DELETE", "/me/history");
 }
+
+/** @returns {Promise<{ topics: string[] }>} slugs of the topics the reader follows */
+export function getFollowedTopics() {
+  return apiGet("/me/topics");
+}
+
+/** Replace the whole list; returns the saved list. */
+export function setFollowedTopics(topics) {
+  return apiSend("PUT", "/me/topics", { topics });
+}

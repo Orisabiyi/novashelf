@@ -11,8 +11,10 @@ import StartHereBanner from "@/components/home/StartHereBanner.vue";
 import TopicGrid from "@/components/home/TopicGrid.vue";
 import WelcomeBack from "@/components/home/WelcomeBack.vue";
 import { useAuth } from "@/composables/useAuth";
+import { useFollowedTopics } from "@/composables/useFollowedTopics";
 
 const { status, isSignedIn, displayName } = useAuth();
+const { followed } = useFollowedTopics();
 
 // Two rows: [small, feature] then [feature, small], matching Explore.
 const LATEST_VARIANTS = ["stacked", "feature", "feature", "stacked"];
@@ -117,11 +119,21 @@ onMounted(() => {
     <section
       class="px-6 py-12 lg:px-10 2xl:px-48 space-y-6"
       aria-labelledby="topics-heading">
-      <div>
-        <p class="text-sm font-medium text-link">Find your corner of the sky</p>
-        <h2 id="topics-heading" class="font-display text-3xl font-bold">
-          Pick a topic
-        </h2>
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p class="text-sm font-medium text-link">Find your corner of the sky</p>
+          <h2 id="topics-heading" class="font-display text-3xl font-bold">
+            {{ followed.length ? "Your topics" : "Pick a topic" }}
+          </h2>
+        </div>
+        <RouterLink
+          v-if="followed.length"
+          :to="{ path: '/explore', query: { topic: 'following' } }"
+          class="inline-flex items-center gap-2 rounded-full bg-action text-on-action px-5 py-2.5 font-medium transition-transform hover:-translate-y-0.5">
+          <i class="pi pi-heart-fill" style="font-size: 0.75rem" aria-hidden="true"></i>
+          Your Following feed
+          <i class="pi pi-arrow-right" style="font-size: 0.7rem" aria-hidden="true"></i>
+        </RouterLink>
       </div>
       <TopicGrid />
     </section>

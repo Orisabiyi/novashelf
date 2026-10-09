@@ -1,11 +1,14 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { RouterLink, useRoute, useRouter } from "vue-router";
 import { getTopics } from "@/api/content";
 import ContentCard from "@/components/content/ContentCard.vue";
 import ContentCardSkeleton from "@/components/content/ContentCardSkeleton.vue";
+import { useAuth } from "@/composables/useAuth";
 import { useFeed } from "@/composables/useFeed";
+import { loadFollowedTopics, toggleFollow, useFollowedTopics } from "@/composables/useFollowedTopics";
 import { useInfiniteScroll } from "@/composables/useInfiniteScroll";
+import { TOPIC_ICONS } from "@/utils/topics";
 
 const route = useRoute();
 const router = useRouter();
@@ -17,8 +20,12 @@ const topic = computed(() =>
     : null,
 );
 
+const { status, isSignedIn } = useAuth();
+const { followed, isFollowing } = useFollowedTopics();
+
 const topics = ref([]);
 onMounted(async () => {
+  loadFollowedTopics();
   try {
     topics.value = await getTopics();
   } catch {
@@ -32,11 +39,28 @@ function selectTopic(slug) {
 
 const { items, hasMore, loading, error, loadMore } = useFeed(topic);
 
+const isFollowingFeed = computed(() => topic.value === "following");
+const selectedTopic = computed(() => topics.value.find((t) => t.slug === topic.value) ?? null);
+const followedTopics = computed(() => topics.value.filter((t) => isFollowing(t.slug)));
+
+const followError = ref("");
+async function onToggleFollow(slug) {
+  followError.value = "";
+  try {
+    await toggleFollow(slug);
+  } catch (e) {
+    followError.value = e.message;
+  }
+}
+
 // Load more as the bottom of the list nears the viewport (this also does the first load).
 const sentinel = ref(null);
 useInfiniteScroll(sentinel, { loading, hasMore, error, loadMore });
 
-const initialLoad = computed(() => loading.value && items.value.length === 0);
+// Includes the moment before the session check finishes, when the feed hasn't started yet.
+const initialLoad = computed(
+  () => (loading.value || status.value === "unknown") && items.value.length === 0 && !error.value,
+);
 const isEmpty = computed(
   () => !loading.value && !error.value && !hasMore.value && items.value.length === 0,
 );
@@ -60,10 +84,55 @@ const chipClass = (selected) =>
 <template>
   <section class="px-6 py-8 lg:px-10 2xl:px-48 space-y-8">
     <header class="space-y-4">
-      <h2 class="text-4xl font-bold">Explore</h2>
-      <p class="text-lg text-muted">
-        The latest from NASA, ESA and the rest of the space world.
-      </p>
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div class="space-y-4">
+          <h2 class="text-4xl font-bold">{{ isFollowingFeed ? "Following" : selectedTopic?.name ?? "Explore" }}</h2>
+          <p class="text-lg text-muted">
+            <template v-if="isFollowingFeed">
+              {{ followedTopics.length ? `The latest on ${followedTopics.map((t) => t.name).join(", ")}.` : "Topics you follow, in one feed." }}
+            </template>
+            <template v-else>The latest from NASA, ESA and the rest of the space world.</template>
+          </p>
+        </div>
+
+        <!-- Follow the topic you're looking at; it then shows up in your Following feed. -->
+        <button
+          v-if="isSignedIn && selectedTopic"
+          type="button"
+          :aria-pressed="isFollowing(selectedTopic.slug)"
+          :class="[
+            'group inline-flex items-center gap-2 rounded-full px-5 py-2.5 font-medium transition-colors',
+            isFollowing(selectedTopic.slug)
+              ? 'border-2 border-brand text-brand hover:border-line-strong hover:text-muted'
+              : 'bg-action text-on-action hover:-translate-y-px',
+          ]"
+          @click="onToggleFollow(selectedTopic.slug)">
+          <template v-if="isFollowing(selectedTopic.slug)">
+            <!-- On hover it turns into an Unfollow button. (Spans: .pi's own display beats `hidden`.) -->
+            <span class="inline-flex items-center gap-2 group-hover:hidden">
+              <i class="pi pi-check" style="font-size: 0.8rem" aria-hidden="true"></i>
+              Following {{ selectedTopic.name }}
+            </span>
+            <span class="hidden items-center gap-2 group-hover:inline-flex">
+              <i class="pi pi-times" style="font-size: 0.8rem" aria-hidden="true"></i>
+              Unfollow
+            </span>
+          </template>
+          <template v-else>
+            <i class="pi pi-plus" style="font-size: 0.8rem" aria-hidden="true"></i>
+            Follow {{ selectedTopic.name }}
+          </template>
+        </button>
+        <!-- Signed out: following needs an account. -->
+        <RouterLink
+          v-else-if="status === 'signedOut' && selectedTopic"
+          :to="{ path: '/login', query: { redirect: route.fullPath } }"
+          class="inline-flex items-center gap-2 rounded-full border-2 border-line-strong px-5 py-2.5 font-medium transition-colors hover:border-ink">
+          <i class="pi pi-plus" style="font-size: 0.8rem" aria-hidden="true"></i>
+          Follow {{ selectedTopic.name }}
+        </RouterLink>
+      </div>
+      <p v-if="followError" role="alert" class="text-sm text-brand">{{ followError }}</p>
 
       <nav
         aria-label="Topics"
@@ -76,6 +145,15 @@ const chipClass = (selected) =>
           All
         </button>
         <button
+          v-if="isSignedIn"
+          type="button"
+          :class="chipClass(isFollowingFeed)"
+          :aria-pressed="isFollowingFeed"
+          @click="selectTopic('following')">
+          <i class="pi pi-heart-fill mr-1" style="font-size: 0.75rem" aria-hidden="true"></i>
+          Following
+        </button>
+        <button
           v-for="t in topics"
           :key="t.slug"
           type="button"
@@ -83,6 +161,11 @@ const chipClass = (selected) =>
           :aria-pressed="topic === t.slug"
           @click="selectTopic(t.slug)">
           {{ t.name }}
+          <i
+            v-if="isFollowing(t.slug)"
+            class="pi pi-check ml-1"
+            style="font-size: 0.7rem"
+            aria-label="(following)"></i>
         </button>
       </nav>
     </header>
@@ -91,11 +174,17 @@ const chipClass = (selected) =>
       v-if="error && items.length === 0"
       role="alert"
       class="flex flex-col items-center gap-4 py-20 text-center">
-      <i class="pi pi-exclamation-circle text-brand" style="font-size: 2.5rem"></i>
+      <i :class="`pi ${error.status === 401 ? 'pi-heart' : 'pi-exclamation-circle'} text-brand`" style="font-size: 2.5rem" aria-hidden="true"></i>
       <p class="text-lg max-w-md">{{ error.message }}</p>
+      <RouterLink
+        v-if="error.status === 401"
+        :to="{ path: '/login', query: { redirect: route.fullPath } }"
+        class="bg-action px-4 py-1 rounded-md text-on-action">
+        Sign in
+      </RouterLink>
       <!-- A 400 (e.g. an unknown topic in the URL) won't succeed on retry. -->
       <button
-        v-if="error.status === 400"
+        v-else-if="error.status === 400"
         type="button"
         class="bg-action px-4 py-1 rounded-md text-on-action"
         @click="selectTopic(null)">
@@ -108,6 +197,29 @@ const chipClass = (selected) =>
         @click="loadMore">
         Try again
       </button>
+    </div>
+
+    <!-- Following nothing yet: pick topics right here. -->
+    <div
+      v-else-if="isFollowingFeed && isSignedIn && isEmpty && followed.length === 0"
+      class="flex flex-col items-center gap-6 rounded-3xl bg-surface px-6 py-14 text-center">
+      <i class="pi pi-heart text-brand" style="font-size: 2.5rem" aria-hidden="true"></i>
+      <div class="space-y-2">
+        <p class="text-xl font-medium">You're not following any topics yet.</p>
+        <p class="text-muted">Pick a few and their latest articles will gather here.</p>
+      </div>
+      <ul class="flex max-w-2xl flex-wrap justify-center gap-2">
+        <li v-for="t in topics" :key="t.slug">
+          <button
+            type="button"
+            class="inline-flex items-center gap-2 rounded-full border-2 border-line-strong px-4 py-1.5 font-medium transition-colors hover:border-brand hover:text-brand"
+            @click="onToggleFollow(t.slug)">
+            <i :class="`pi ${TOPIC_ICONS[t.slug] ?? 'pi-compass'}`" style="font-size: 0.8rem" aria-hidden="true"></i>
+            {{ t.name }}
+            <i class="pi pi-plus" style="font-size: 0.7rem" aria-hidden="true"></i>
+          </button>
+        </li>
+      </ul>
     </div>
 
     <div

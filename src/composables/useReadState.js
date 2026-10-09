@@ -1,4 +1,4 @@
-import { reactive } from "vue";
+import { reactive, watch } from "vue";
 import { recordRead } from "@/api/me";
 import { loadSession, useAuth } from "@/composables/useAuth";
 
@@ -6,6 +6,11 @@ const { isSignedIn } = useAuth();
 
 // Items read during this visit, so cards show "Read" straight away without refetching feeds.
 const readThisVisit = reactive(new Set());
+
+// Another reader may sign in on this device next.
+watch(isSignedIn, (signedIn) => {
+  if (!signedIn) readThisVisit.clear();
+});
 
 /** Whether the reader has opened this item (from the API's flag or during this visit). */
 export function isRead(item) {
