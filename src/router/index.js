@@ -9,6 +9,7 @@ import LoginView from "@/views/LoginView.vue";
 import NotFound from "@/views/NotFound.vue";
 import Onboard from "@/views/Onboard.vue";
 import ReaderView from "@/views/ReaderView.vue";
+import SettingsView from "@/views/SettingsView.vue";
 import TrackView from "@/views/TrackView.vue";
 import { createRouter, createWebHistory } from "vue-router";
 import { loadSession, useAuth } from "@/composables/useAuth";
@@ -68,6 +69,12 @@ const router = createRouter({
       path: "/history",
       name: "history",
       component: HistoryView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/settings",
+      name: "settings",
+      component: SettingsView,
       meta: { requiresAuth: true },
     },
     {

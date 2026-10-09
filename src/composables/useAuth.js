@@ -45,6 +45,16 @@ export function useAuth() {
 
     register: (details) => authApi.register(details).then(signedIn),
     signIn: (credentials) => authApi.login(credentials).then(signedIn),
+    updateAccount: (details) =>
+      authApi.updateAccount(details).then((account) => {
+        state.account = account;
+        return account;
+      }),
+    async deleteAccount(password) {
+      await authApi.deleteAccount(password);
+      state.account = null;
+      state.status = "signedOut";
+    },
     async signOut() {
       try {
         await authApi.logout();

@@ -136,6 +136,13 @@ async function handleSignOut() {
             <i class="pi pi-history" style="font-size: 0.8rem" aria-hidden="true"></i>
             Reading history
           </RouterLink>
+          <RouterLink
+            to="/settings"
+            class="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium hover:bg-on-nav/10"
+            @click="accountOpen = false">
+            <i class="pi pi-cog" style="font-size: 0.8rem" aria-hidden="true"></i>
+            Settings
+          </RouterLink>
           <button
             type="button"
             class="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium hover:bg-on-nav/10"
@@ -198,6 +205,12 @@ async function handleSignOut() {
           <RouterLink to="/history" class="flex items-center gap-2 rounded-2xl px-4 py-3 font-medium text-on-nav-muted">
             <i class="pi pi-history" style="font-size: 0.85rem" aria-hidden="true"></i>
             Reading history
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink to="/settings" class="flex items-center gap-2 rounded-2xl px-4 py-3 font-medium text-on-nav-muted">
+            <i class="pi pi-cog" style="font-size: 0.85rem" aria-hidden="true"></i>
+            Settings
           </RouterLink>
         </li>
         <li>

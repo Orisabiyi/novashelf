@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from "@/api/client";
+import { apiGet, apiPost, apiSend } from "@/api/client";
 
 /**
  * @typedef {object} Account
@@ -30,4 +30,18 @@ export function logout() {
 /** The signed-in reader; rejects with a 401 ApiError when signed out. @returns {Promise<Account>} */
 export function getMe() {
   return apiGet("/me");
+}
+
+/** @param {{ firstName: string | null }} details @returns {Promise<Account>} */
+export function updateAccount(details) {
+  return apiSend("PATCH", "/me", details);
+}
+
+export function changePassword({ currentPassword, newPassword }) {
+  return apiPost("/me/password", { currentPassword, newPassword });
+}
+
+/** Deletes the account and everything stored for it, then signs out. */
+export function deleteAccount(password) {
+  return apiSend("DELETE", "/me", { password });
 }

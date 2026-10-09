@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref } from "vue";
-import { RouterLink } from "vue-router";
+import { RouterLink, useRoute } from "vue-router";
 import { getApod, getFeed } from "@/api/content";
 import ContentCard from "@/components/content/ContentCard.vue";
 import ContentCardSkeleton from "@/components/content/ContentCardSkeleton.vue";
@@ -15,6 +15,10 @@ import { useFollowedTopics } from "@/composables/useFollowedTopics";
 
 const { status, isSignedIn, displayName } = useAuth();
 const { followed } = useFollowedTopics();
+
+// Arriving from Settings after deleting an account.
+const route = useRoute();
+const accountDeleted = ref(route.query.deleted === "1");
 
 // Two rows: [small, feature] then [feature, small], matching Explore.
 const LATEST_VARIANTS = ["stacked", "feature", "feature", "stacked"];
@@ -46,6 +50,19 @@ onMounted(() => {
 
 <template>
   <div>
+    <div
+      v-if="accountDeleted"
+      role="status"
+      class="relative z-10 mx-6 mb-4 flex items-center justify-between gap-4 rounded-2xl bg-surface px-5 py-3 lg:mx-10 2xl:mx-48">
+      <p class="flex items-center gap-2">
+        <i class="pi pi-check-circle text-brand" aria-hidden="true"></i>
+        Your account and everything saved with it has been deleted.
+      </p>
+      <button type="button" class="grid size-8 place-items-center rounded-full text-muted hover:text-ink" aria-label="Dismiss" @click="accountDeleted = false">
+        <i class="pi pi-times" style="font-size: 0.75rem" aria-hidden="true"></i>
+      </button>
+    </div>
+
     <!-- Pulled up under the floating navbar so the starfield shows around it. -->
     <section class="relative overflow-hidden -mt-20 pt-20">
       <StarField />
