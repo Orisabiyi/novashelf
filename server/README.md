@@ -15,7 +15,8 @@ in memory:
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) (`dotnet --list-sdks` should show `10.x`)
 
 A Postgres database ([Neon](https://neon.com)) is optional: without one the API keeps extracted
-articles in memory only. No Docker or API keys are needed.
+articles in memory only and accounts are switched off (account endpoints answer `503`). No Docker
+or API keys are needed.
 
 ### Configuration
 
@@ -24,7 +25,8 @@ articles in memory only. No Docker or API keys are needed.
 | `ConnectionStrings:Default` | Postgres connection (Npgsql `Host=…;Database=…;Username=…;Password=…;SSL Mode=Require` format). Stores extracted articles so they survive restarts. Use Neon's pooled host. |
 | `ConnectionStrings:Migrations` | Optional direct (non-pooler) connection used to apply migrations; defaults to `Default`. |
 | `Database:MigrateOnStartup` | Apply pending migrations when the API starts (default `true`). |
-| `Images:SigningKey` | Secret used to sign `/api/img` URLs. Optional in development (a random key is generated per run, so image URLs from before a restart stop working until the page reloads). **Set it in production**, e.g. `dotnet user-secrets set "Images:SigningKey" "<long random string>"` locally or an app secret in Azure.
+| `Images:SigningKey` | Secret used to sign `/api/img` URLs. Optional in development (a random key is generated per run, so image URLs from before a restart stop working until the page reloads). **Set it in production**, e.g. `dotnet user-secrets set "Images:SigningKey" "<long random string>"` locally or an app secret in Azure. |
+| `Proxy:Hops` | Number of proxies in front of the API whose `X-Forwarded-For` entries are trusted (default `2`: Vercel, then Azure's ingress). Used outside Development only, so the per-IP sign-in limit sees each visitor's own address. |
 
 ## Run
 
@@ -101,6 +103,28 @@ dotnet test server
 | `GET /api/images?q=&page=` | NASA image search, 24 per page |
 | `GET /api/content/{id}/read` | Reader view: item, clean article HTML, byline, reading time, `extracted` |
 | `GET /api/img?src=&sig=&w=` | Resized WebP copy of a signed image URL (as returned in `imageUrl`); `w` snaps to 320–2048 |
+| `GET /api/learn` | Learning paths and their lessons |
+| `GET /api/learn/{track}/{lesson}` | One lesson, with its text and sources |
+
+### Accounts
+
+Signed in with an HttpOnly cookie. Sign-in, sign-up, password changes and account deletion are
+limited to 10 requests a minute per address, and an account locks for 5 minutes after 5 wrong
+passwords.
+
+| Method & path | Description |
+|---|---|
+| `POST /api/auth/register` | Create an account (`email`, `password`, `firstName`, `ageConfirmed`) and sign in |
+| `POST /api/auth/login` | Sign in (`email`, `password`, `remember`) |
+| `POST /api/auth/logout` | Sign out |
+| `GET /api/me` | The signed-in reader, or `401` |
+| `PATCH /api/me` | Change the first name |
+| `POST /api/me/password` | Change the password (`currentPassword`, `newPassword`) |
+| `DELETE /api/me` | Delete the account and everything saved with it (`password`) |
+| `GET/POST/DELETE /api/me/history`, `DELETE /api/me/history/{id}` | Reading history |
+| `GET/PUT /api/me/topics` | Followed topics; `GET /api/feed?topic=following` mixes them |
+| `GET/PUT /api/me/preferences` | Reader settings (`fontSize`, `width`, `theme`); `204` until first saved |
+| `GET /api/me/lessons`, `PUT/DELETE /api/me/lessons/{track}/{lesson}` | Finished lessons |
 
 Errors use [ProblemDetails](https://www.rfc-editor.org/rfc/rfc9457). Invalid input returns `400`,
 unknown content `404`, and an unreachable upstream source `502`.
