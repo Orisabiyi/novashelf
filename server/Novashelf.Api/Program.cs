@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Novashelf.Api.Accounts;
 using Novashelf.Api.Data;
 using Novashelf.Api.Endpoints;
@@ -74,7 +75,22 @@ builder.Services.AddHttpClient<PageExtractor>(c =>
     c.DefaultRequestHeaders.UserAgent.ParseAdd($"Mozilla/5.0 (compatible; {userAgent})");
 }).ConfigurePrimaryHttpMessageHandler(OutboundGuard.CreateHandler);
 
+// In production requests arrive through Vercel and then Azure's ingress, each adding itself to
+// X-Forwarded-For. Without this every visitor would share the proxy's address, and the per-IP
+// sign-in limit would lock everyone out together. Proxy:Hops is the number of proxies to trust.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.ForwardLimit = builder.Configuration.GetValue("Proxy:Hops", 2);
+    // The proxies' addresses aren't fixed, so trust the hop count instead of a list.
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+var behindProxy = !builder.Environment.IsDevelopment();
+
 var app = builder.Build();
+
+if (behindProxy) app.UseForwardedHeaders();
 
 await app.MigrateDatabaseAsync();
 
