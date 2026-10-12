@@ -1,0 +1,441 @@
+{
+  "tracks": [
+    {
+      "slug": "cosmic-address",
+      "title": "Our cosmic address",
+      "summary": "Start here: what space is, how we measure it, and where we are in it.",
+      "icon": "pi-map-marker",
+      "startHere": true,
+      "lessons": [
+        {
+          "slug": "what-is-space",
+          "title": "What is space?",
+          "summary": "Where space begins, and what is (and isn't) out there.",
+          "keyIdeas": [
+            "Space is usually said to begin about 100 kilometres above Earth, where the air becomes too thin for planes to fly.",
+            "It isn't completely empty: it holds thin gas, dust, light and radiation, but far less matter than any vacuum we can make on Earth.",
+            "With no air to carry it, sound can't travel through space.",
+            "Objects in sunlight heat up while those in shadow get extremely cold, so space isn't simply 'hot' or 'cold'."
+          ],
+          "sources": [
+            { "kind": "wikipedia", "page": "Outer_space", "title": "Outer space" },
+            { "kind": "nasa", "url": "https://science.nasa.gov/universe/overview/", "title": "Universe overview" }
+          ]
+        },
+        {
+          "slug": "light-years",
+          "title": "Light-years: measuring huge distances",
+          "summary": "Why astronomers measure distance in years.",
+          "keyIdeas": [
+            "A light-year is a distance, not a time: how far light travels in one year.",
+            "That's about 9.46 trillion kilometres.",
+            "Sunlight takes about 8 minutes to reach Earth; light from the nearest other star, Proxima Centauri, takes about 4.2 years.",
+            "Looking at distant objects means looking back in time: we see them as they were when their light set off."
+          ],
+          "sources": [
+            { "kind": "wikipedia", "page": "Light-year", "title": "Light year" },
+            { "kind": "nasa", "url": "https://science.nasa.gov/learn/basics-of-space-flight/chapter1-1/", "title": "Basics of Space Flight: The Solar System" }
+          ]
+        },
+        {
+          "slug": "our-place",
+          "title": "Our address in the universe",
+          "summary": "From planet to star to galaxy to the whole universe.",
+          "keyIdeas": [
+            "Earth is one of eight planets orbiting the Sun.",
+            "The Sun is one of hundreds of billions of stars in our galaxy, the Milky Way.",
+            "The Milky Way is one of billions of galaxies.",
+            "Together, all matter, energy, space and time make up the universe, which is about 13.8 billion years old."
+          ],
+          "sources": [
+            { "kind": "wikipedia", "page": "Universe", "title": "Universe" },
+            { "kind": "nasa", "url": "https://science.nasa.gov/universe/overview/building-blocks/", "title": "The universe's building blocks" }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "solar-system",
+      "title": "The Solar System",
+      "summary": "The Sun, its planets and moons, and the small worlds in between.",
+      "icon": "pi-sun",
+      "lessons": [
+        {
+          "slug": "meet-the-solar-system",
+          "title": "Meet the Solar System",
+          "summary": "Our Sun and everything that orbits it.",
+          "topic": "solar-system",
+          "keyIdeas": [
+            "The Solar System formed about 4.6 billion years ago from a collapsing cloud of gas and dust.",
+            "The Sun holds about 99.8% of all the Solar System's mass.",
+            "Eight planets orbit the Sun: four small rocky ones close in, and four giants farther out.",
+            "Beyond the planets are dwarf planets like Pluto and countless icy bodies in the Kuiper Belt."
+          ],
+          "sources": [
+            { "kind": "wikipedia", "page": "Solar_System", "title": "Solar System" },
+            { "kind": "nasa", "url": "https://science.nasa.gov/solar-system/solar-system-facts/", "title": "Solar System facts" }
+          ]
+        },
+        {
+          "slug": "the-sun",
+          "title": "The Sun, our star",
+          "summary": "The star at the centre of it all.",
+          "topic": "solar-system",
+          "keyIdeas": [
+            "The Sun is a star: a giant ball of hot gas, mostly hydrogen and helium.",
+            "In its core, hydrogen fuses into helium, releasing the energy that lights and warms Earth.",
+            "About 109 Earths would fit side by side across its face.",
+            "It's roughly 4.6 billion years old, about halfway through its life."
+          ],
+          "sources": [
+            { "kind": "wikipedia", "page": "Sun", "title": "Sun" },
+            { "kind": "nasa", "url": "https://science.nasa.gov/sun/facts/", "title": "Sun facts" }
+          ]
+        },
+        {
+          "slug": "rocky-planets",
+          "title": "The rocky planets",
+          "summary": "Mercury, Venus, Earth and Mars.",
+          "topic": "mars",
+          "keyIdeas": [
+            "Mercury, Venus, Earth and Mars are the inner, rocky planets, with solid surfaces.",
+            "Venus is the hottest planet, because its thick carbon-dioxide atmosphere traps heat.",
+            "Mars has the largest volcano in the Solar System, Olympus Mons.",
+            "Earth is the only planet known to have life, and liquid water on its surface."
+          ],
+          "sources": [
+            { "kind": "wikipedia", "page": "Terrestrial_planet", "title": "Terrestrial planet" },
+            { "kind": "nasa", "url": "https://science.nasa.gov/solar-system/planets/", "title": "About the planets" }
+          ]
+        },
+        {
+          "slug": "giant-planets",
+          "title": "The giant planets",
+          "summary": "Jupiter, Saturn, Uranus and Neptune.",
+          "topic": "solar-system",
+          "keyIdeas": [
+            "Jupiter and Saturn are gas giants, made mostly of hydrogen and helium.",
+            "Uranus and Neptune are ice giants, with more water, ammonia and methane.",
+            "None of them has a solid surface to land on.",
+            "All four have rings, though Saturn's are by far the brightest."
+          ],
+          "sources": [
+            { "kind": "wikipedia", "page": "Gas_giant", "title": "Gas giant" },
+            { "kind": "nasa", "url": "https://science.nasa.gov/jupiter/jupiter-facts/", "title": "Jupiter facts" }
+          ]
+        },
+        {
+          "slug": "moons",
+          "title": "Moons",
+          "summary": "Our Moon, and the many others in the Solar System.",
+          "topic": "moon",
+          "keyIdeas": [
+            "A moon is a natural object that orbits a planet, or another body such as a dwarf planet or asteroid.",
+            "Earth's Moon probably formed about 4.5 billion years ago from debris after a giant collision.",
+            "The same side of the Moon always faces Earth.",
+            "Jupiter and Saturn each have more than 90 known moons, and some, like Europa and Enceladus, hide oceans under their ice."
+          ],
+          "sources": [
+            { "kind": "wikipedia", "page": "Natural_satellite", "title": "Natural satellite" },
+            { "kind": "nasa", "url": "https://science.nasa.gov/moon/facts/", "title": "Moon facts" }
+          ]
+        },
+        {
+          "slug": "small-worlds",
+          "title": "Dwarf planets, asteroids and comets",
+          "summary": "The small worlds left over from the Solar System's birth.",
+          "topic": "solar-system",
+          "keyIdeas": [
+            "Dwarf planets, like Pluto and Ceres, are round but haven't cleared their path around the Sun of other objects.",
+            "Asteroids are rocky leftovers from the Solar System's formation; most orbit between Mars and Jupiter.",
+            "Comets are balls of ice and dust that grow glowing tails when they come near the Sun.",
+            "Studying these small worlds tells us what the early Solar System was made of."
+          ],
+          "sources": [
+            { "kind": "wikipedia", "page": "Dwarf_planet", "title": "Dwarf planet" },
+            { "kind": "nasa", "url": "https://science.nasa.gov/dwarf-planets/", "title": "Pluto and dwarf planets" }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "stars",
+      "title": "Stars",
+      "summary": "How stars are born, shine and die.",
+      "icon": "pi-star",
+      "lessons": [
+        {
+          "slug": "what-is-a-star",
+          "title": "What is a star?",
+          "summary": "Giant balls of gas that make their own light.",
+          "keyIdeas": [
+            "A star is a huge ball of gas that shines because of nuclear fusion in its core.",
+            "Stars are born in clouds of gas and dust called nebulae.",
+            "A star's colour shows its surface temperature: blue stars are the hottest, red ones the coolest.",
+            "Every star you can see with your eyes at night is in our own galaxy."
+          ],
+          "sources": [
+            { "kind": "wikipedia", "page": "Star", "title": "Star" },
+            { "kind": "nasa", "url": "https://science.nasa.gov/universe/stars/", "title": "Stars" }
+          ]
+        },
+        {
+          "slug": "life-of-a-star",
+          "title": "The life of a star",
+          "summary": "From birth to red giant, white dwarf or something stranger.",
+          "keyIdeas": [
+            "A star's mass decides how long it lives and how it ends.",
+            "Stars like the Sun shine for about 10 billion years, then swell into red giants and leave behind white dwarfs.",
+            "The most massive stars burn out in just a few million years.",
+            "Many elements in your body, like carbon and oxygen, were made inside stars."
+          ],
+          "sources": [
+            { "kind": "wikipedia", "page": "Stellar_evolution", "title": "Stellar evolution" },
+            { "kind": "nasa", "url": "https://science.nasa.gov/universe/stars/types/", "title": "Types of stars" }
+          ]
+        },
+        {
+          "slug": "supernovae",
+          "title": "Supernovae",
+          "summary": "The explosions that end some stars, and seed new ones.",
+          "keyIdeas": [
+            "A supernova is an exploding star, which can briefly outshine its whole galaxy.",
+            "It happens when a very massive star's core collapses, or when a white dwarf takes on too much matter.",
+            "Supernovae scatter heavy elements into space, which end up in new stars and planets.",
+            "What's left behind can be a neutron star or a black hole."
+          ],
+          "sources": [
+            { "kind": "wikipedia", "page": "Supernova", "title": "Supernova" }
+          ]
+        },
+        {
+          "slug": "black-holes",
+          "title": "Black holes",
+          "summary": "Where gravity wins completely.",
+          "keyIdeas": [
+            "A black hole is a place where gravity is so strong that nothing, not even light, can escape.",
+            "Many form when massive stars collapse at the end of their lives.",
+            "Supermassive black holes, millions to billions of times the Sun's mass, sit at the centres of most large galaxies.",
+            "In 2019 astronomers released the first image of one, in the galaxy M87."
+          ],
+          "sources": [
+            { "kind": "wikipedia", "page": "Black_hole", "title": "Black hole" },
+            { "kind": "nasa", "url": "https://science.nasa.gov/universe/black-holes/", "title": "Black holes" }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "galaxies",
+      "title": "Galaxies and the universe",
+      "summary": "Star cities, our Milky Way, and how it all began.",
+      "icon": "pi-sparkles",
+      "lessons": [
+        {
+          "slug": "galaxies",
+          "title": "What is a galaxy?",
+          "summary": "Vast collections of stars held together by gravity.",
+          "topic": "telescopes",
+          "keyIdeas": [
+            "A galaxy is a huge collection of stars, gas, dust and dark matter held together by gravity.",
+            "Galaxies come in three main shapes: spiral, elliptical and irregular.",
+            "The nearest large galaxy, Andromeda, is about 2.5 million light-years away.",
+            "There are billions of galaxies in the observable universe."
+          ],
+          "sources": [
+            { "kind": "wikipedia", "page": "Galaxy", "title": "Galaxy" },
+            { "kind": "nasa", "url": "https://science.nasa.gov/universe/galaxies/", "title": "Galaxies" }
+          ]
+        },
+        {
+          "slug": "milky-way",
+          "title": "The Milky Way",
+          "summary": "Our home galaxy.",
+          "keyIdeas": [
+            "The Milky Way is our home galaxy, a barred spiral about 100,000 light-years across.",
+            "The Solar System sits in one of its spiral arms, about 26,000 light-years from the centre.",
+            "At its heart is a supermassive black hole called Sagittarius A*.",
+            "From a dark place on Earth it appears as a faint band of light across the night sky."
+          ],
+          "sources": [
+            { "kind": "wikipedia", "page": "Milky_Way", "title": "Milky Way" }
+          ]
+        },
+        {
+          "slug": "big-bang",
+          "title": "The Big Bang",
+          "summary": "How the universe began, and why it's still growing.",
+          "keyIdeas": [
+            "The Big Bang theory says the universe began about 13.8 billion years ago in a hot, dense state and has been expanding ever since.",
+            "It wasn't an explosion into space: space itself has been stretching.",
+            "Evidence includes the faint glow left over from the early universe, the cosmic microwave background.",
+            "The universe is still expanding today, and the expansion is speeding up."
+          ],
+          "sources": [
+            { "kind": "wikipedia", "page": "Big_Bang", "title": "Big Bang" },
+            { "kind": "nasa", "url": "https://science.nasa.gov/universe/overview/", "title": "Universe overview" }
+          ]
+        },
+        {
+          "slug": "dark-matter",
+          "title": "Dark matter and dark energy",
+          "summary": "Most of the universe is something we can't see.",
+          "keyIdeas": [
+            "Most matter in the universe is invisible 'dark matter' that doesn't give off, reflect or block light.",
+            "We know it's there from its gravity: galaxies spin too fast to hold together without it.",
+            "Dark energy is something else: a mysterious effect that is speeding up the universe's expansion.",
+            "Ordinary matter, everything we can see, makes up only about 5% of the universe."
+          ],
+          "sources": [
+            { "kind": "wikipedia", "page": "Dark_matter", "title": "Dark matter" },
+            { "kind": "nasa", "url": "https://science.nasa.gov/dark-matter/", "title": "Dark matter" }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "other-solar-systems",
+      "title": "Other solar systems",
+      "summary": "Planets around other stars, and where life might be possible.",
+      "icon": "pi-globe",
+      "lessons": [
+        {
+          "slug": "exoplanets",
+          "title": "What is an exoplanet?",
+          "summary": "Planets that orbit other stars.",
+          "topic": "exoplanets",
+          "keyIdeas": [
+            "An exoplanet is a planet that orbits a star other than the Sun.",
+            "The first one around a Sun-like star was found in 1995; today more than 6,000 are confirmed.",
+            "Most are found by spotting tiny dips in a star's light as a planet passes in front of it.",
+            "Many are unlike anything in our own Solar System."
+          ],
+          "sources": [
+            { "kind": "wikipedia", "page": "Exoplanet", "title": "Extrasolar planet" },
+            { "kind": "nasa", "url": "https://science.nasa.gov/exoplanets/what-is-an-exoplanet/", "title": "What is an exoplanet?" }
+          ]
+        },
+        {
+          "slug": "planet-types",
+          "title": "Kinds of planets out there",
+          "summary": "Hot Jupiters, super-Earths and more.",
+          "topic": "exoplanets",
+          "keyIdeas": [
+            "Astronomers sort exoplanets into gas giants, Neptune-like planets, super-Earths and rocky planets.",
+            "Super-Earths are bigger than Earth but smaller than Neptune, a size our Solar System doesn't have.",
+            "Some 'hot Jupiters' orbit so close to their stars that a year lasts only a few days.",
+            "A star with its planets is called a planetary system; ours is one of many."
+          ],
+          "sources": [
+            { "kind": "wikipedia", "page": "Planetary_system", "title": "Planetary system" },
+            { "kind": "nasa", "url": "https://science.nasa.gov/exoplanets/planet-types/", "title": "Exoplanet types" }
+          ]
+        },
+        {
+          "slug": "habitable-zone",
+          "title": "The habitable zone",
+          "summary": "Where liquid water, and maybe life, could exist.",
+          "topic": "exoplanets",
+          "keyIdeas": [
+            "The habitable zone is the range of distances from a star where a planet could have liquid water on its surface.",
+            "Too close and water boils away; too far and it freezes.",
+            "Being in the zone doesn't mean a planet has life, or even water.",
+            "Earth sits comfortably inside the Sun's habitable zone."
+          ],
+          "sources": [
+            { "kind": "wikipedia", "page": "Habitable_zone", "title": "Habitable zone" },
+            { "kind": "nasa", "url": "https://science.nasa.gov/exoplanets/habitable-zone/", "title": "The habitable zone" }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "how-we-explore",
+      "title": "How we explore",
+      "summary": "Rockets, orbits, telescopes, space stations and rovers.",
+      "icon": "pi-send",
+      "lessons": [
+        {
+          "slug": "rockets",
+          "title": "How rockets work",
+          "summary": "Pushing gas one way to go the other.",
+          "topic": "launches",
+          "keyIdeas": [
+            "A rocket pushes hot gas out of its engine in one direction, which pushes the rocket the other way.",
+            "Rockets carry their own oxygen supply, so their engines work in space where there's no air.",
+            "To stay in orbit around Earth, a spacecraft must travel about 28,000 km/h sideways.",
+            "Most rockets are built in stages that drop away once their fuel is used up."
+          ],
+          "sources": [
+            { "kind": "wikipedia", "page": "Rocket", "title": "Rocket" },
+            { "kind": "nasa", "url": "https://www.nasa.gov/learning-resources/for-kids-and-students/what-is-a-rocket-grades-5-8/", "title": "What is a rocket?" }
+          ]
+        },
+        {
+          "slug": "orbits",
+          "title": "Orbits",
+          "summary": "Falling around a planet without ever hitting it.",
+          "topic": "launches",
+          "keyIdeas": [
+            "An orbit is the curved path one object follows around another because of gravity.",
+            "A spacecraft in orbit is always falling towards Earth, but moving sideways fast enough to keep missing it.",
+            "Low Earth orbit (LEO) reaches up to about 2,000 km; the space station flies at around 400 km.",
+            "Geostationary satellites, about 36,000 km up, circle once a day and seem to hang still over one spot."
+          ],
+          "sources": [
+            { "kind": "wikipedia", "page": "Orbit", "title": "Orbit" },
+            { "kind": "nasa", "url": "https://science.nasa.gov/learn/basics-of-space-flight/chapter5-1/", "title": "Basics of Space Flight: Planetary orbits" }
+          ]
+        },
+        {
+          "slug": "space-telescopes",
+          "title": "Space telescopes",
+          "summary": "Why we put telescopes above the atmosphere.",
+          "topic": "telescopes",
+          "keyIdeas": [
+            "Telescopes in space see more clearly because Earth's air blurs and blocks some kinds of light.",
+            "Hubble, launched in 1990, has made more than 1.5 million observations.",
+            "The James Webb Space Telescope sees infrared light, letting it look through dust and back towards the first galaxies.",
+            "Different telescopes study different kinds of light, from radio waves to X-rays."
+          ],
+          "sources": [
+            { "kind": "wikipedia", "page": "Space_telescope", "title": "Space observatory" },
+            { "kind": "nasa", "url": "https://science.nasa.gov/mission/hubble/overview/about-hubble/", "title": "About Hubble" }
+          ]
+        },
+        {
+          "slug": "space-station",
+          "title": "The International Space Station",
+          "summary": "A home and laboratory in orbit.",
+          "topic": "iss",
+          "keyIdeas": [
+            "The International Space Station is a laboratory orbiting about 400 km above Earth.",
+            "People have lived on board continuously since November 2000.",
+            "It circles Earth about every 90 minutes, roughly 16 times a day.",
+            "Crews study how living in space affects the human body, among thousands of other experiments."
+          ],
+          "sources": [
+            { "kind": "wikipedia", "page": "International_Space_Station", "title": "International Space Station" },
+            { "kind": "nasa", "url": "https://www.nasa.gov/international-space-station/", "title": "International Space Station" }
+          ]
+        },
+        {
+          "slug": "rovers",
+          "title": "Rovers",
+          "summary": "Robot explorers on other worlds.",
+          "topic": "mars",
+          "keyIdeas": [
+            "A rover is a robotic vehicle that drives across another world's surface.",
+            "NASA's Curiosity and Perseverance rovers are exploring Mars, looking for signs of ancient life.",
+            "Commands take several minutes to reach Mars, so rovers drive partly on their own.",
+            "Rovers have explored the Moon too, starting with the Soviet Lunokhod 1 in 1970."
+          ],
+          "sources": [
+            { "kind": "wikipedia", "page": "Rover_(space_exploration)", "title": "Rover (space exploration)" },
+            { "kind": "nasa", "url": "https://science.nasa.gov/mission/mars-2020-perseverance/", "title": "Perseverance rover" }
+          ]
+        }
+      ]
+    }
+  ]
+}

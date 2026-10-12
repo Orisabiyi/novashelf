@@ -1,0 +1,28 @@
+# Render Blueprint for the Novashelf API (https://render.com/docs/blueprint-spec).
+# The site itself is on Vercel, which passes /api requests through to this service.
+services:
+  - type: web
+    name: novashelf-api
+    runtime: docker
+    plan: free
+    # Next to the Neon database in Frankfurt: every query is a round trip.
+    region: frankfurt
+    dockerContext: ./server
+    dockerfilePath: ./server/Dockerfile
+    healthCheckPath: /api/health
+    # Only redeploy when the API changes.
+    buildFilter:
+      paths:
+        - server/**
+    envVars:
+      # The container listens on 8080; tell Render where to send traffic.
+      - key: PORT
+        value: "8080"
+      # Neon connection strings (Npgsql format): pooled host, and the direct host for migrations.
+      # Entered in the Render dashboard when the Blueprint is created; never committed.
+      - key: ConnectionStrings__Default
+        sync: false
+      - key: ConnectionStrings__Migrations
+        sync: false
+      - key: Images__SigningKey
+        generateValue: true

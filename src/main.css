@@ -1,10 +1,91 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Space+Grotesk:wght@300..700&display=swap");
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
+/*
+ * Novashelf palette: "Moonlight Grey", dark by default — warm charcoal page and cards,
+ * light ink, a near-black navbar, with Mars red as the brand colour and slate as the
+ * second colour. A light variant lives under data-theme="light" for reader preferences.
+ * Use these tokens (bg-page, text-ink, bg-action …) instead of Tailwind's stock grays so
+ * both themes stay consistent.
+ *
+ * Red has three jobs, because #d85357 is too light for small text on light backgrounds:
+ *   brand     logo, display headlines, icons
+ *   action    button fills; pair with text-on-action (4.6:1 dark, 5.2:1 light)
+ *   link      small red text, links, active/hover states (5.7:1 dark, 5.2:1 light)
+ */
 @theme {
-  --color-base-red: #d85357;
+  --font-display: "Space Grotesk", "DM Sans", sans-serif;
+
+  --color-brand: #d85357;
+  --color-action: #d85357;
+  --color-on-action: #171615;
+  --color-link: #e8787b;
+
+  --color-page: #171615;
+  --color-surface: #22201f;
+  --color-ink: #efedea;
+  --color-muted: #a8a29d;
+  --color-line: #2d2a28;
+  --color-line-strong: #3b3836;
+  --color-subtle: #2a2725;
+  --color-slate: #cbd5e1;
+  --color-on-slate: #171615;
+
+  --color-nav: #0e0d0d;
+  --color-on-nav: #efedea;
+  --color-on-nav-muted: #b5afaa;
+  --color-nav-link: #e8787b;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+/* Light theme: set data-theme="light" on <html> (wired up with reader preferences). */
+:root[data-theme="light"] {
+  --color-action: #c13f45;
+  --color-on-action: #ffffff;
+  --color-link: #c13f45;
+
+  --color-page: #ebe8e4;
+  --color-surface: #ffffff;
+  --color-ink: #1f1d1c;
+  --color-muted: #5c5753;
+  --color-line: #e3e0dc;
+  --color-line-strong: #d2cdc8;
+  --color-subtle: #efece8;
+  --color-slate: #4a5568;
+  --color-on-slate: #ffffff;
+
+  /* The navbar stays a dark graphite band in the light theme. */
+  --color-nav: #1f1d1c;
+
+  color-scheme: light;
 }
 
 body {
   font-family: "DM Sans", sans-serif;
+  background-color: var(--color-page);
+  color: var(--color-ink);
+}
+
+/* Article typography (the reader) uses the palette, so it follows the theme. */
+.prose {
+  --tw-prose-body: var(--color-ink);
+  --tw-prose-headings: var(--color-ink);
+  --tw-prose-lead: var(--color-muted);
+  --tw-prose-links: var(--color-link);
+  --tw-prose-bold: var(--color-ink);
+  --tw-prose-counters: var(--color-muted);
+  --tw-prose-bullets: var(--color-line-strong);
+  --tw-prose-hr: var(--color-line);
+  --tw-prose-quotes: var(--color-ink);
+  --tw-prose-quote-borders: var(--color-brand);
+  --tw-prose-captions: var(--color-muted);
+  --tw-prose-code: var(--color-ink);
+  --tw-prose-pre-code: var(--color-ink);
+  --tw-prose-pre-bg: var(--color-surface);
+  --tw-prose-th-borders: var(--color-line-strong);
+  --tw-prose-td-borders: var(--color-line);
 }

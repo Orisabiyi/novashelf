@@ -39,3 +39,7 @@ __screenshots__/
 *.timestamp-*-*.mjs
 
 note.md
+
+# .NET
+server/**/bin/
+server/**/obj/

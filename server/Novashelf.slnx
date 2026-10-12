@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Novashelf.Api.Tests/Novashelf.Api.Tests.csproj" />
+  <Project Path="Novashelf.Api/Novashelf.Api.csproj" />
+</Solution>

@@ -1,97 +1,176 @@
 <script setup>
-import { onBeforeUnmount, ref } from "vue";
+import { nextTick, reactive, ref } from "vue";
+import { RouterLink, useRoute, useRouter } from "vue-router";
 import logoImg from "@/assets/novashelf-logo.svg";
-import { authSchema, emailSchema } from "@/validation/auth";
+import TextField from "@/components/auth/TextField.vue";
+import { useAuth } from "@/composables/useAuth";
+import { emailSchema, fieldErrors, signUpSchema } from "@/validation/auth";
 
-function showError(msg) {
-  error.value = msg;
-  setTimeout(() => (error.value = ""), 2000);
+const route = useRoute();
+const router = useRouter();
+const { register } = useAuth();
+
+// Two steps: the email first, then everything else.
+const step = ref(1);
+const form = reactive({
+  email: "",
+  firstName: "",
+  password: "",
+  confirmPassword: "",
+  ageConfirmed: false,
+});
+const errors = ref({});
+/** A problem with the whole request (e.g. the email already has an account). */
+const formError = ref("");
+const emailTaken = ref(false);
+const submitting = ref(false);
+
+async function continueToDetails() {
+  const result = emailSchema.safeParse({ email: form.email });
+  errors.value = result.success ? {} : fieldErrors(result.error);
+  if (!result.success) return;
+
+  form.email = result.data.email;
+  step.value = 2;
+  await nextTick();
+  document.getElementById("signup-first-name")?.focus();
 }
 
-const age = ref("");
-const email = ref("");
-const password = ref("");
-const confirmPassword = ref("");
+function changeEmail() {
+  step.value = 1;
+  formError.value = "";
+  emailTaken.value = false;
+  nextTick(() => document.getElementById("signup-email")?.focus());
+}
 
-const error = ref("");
+async function createAccount() {
+  formError.value = "";
+  emailTaken.value = false;
 
-const step = ref(1);
+  const result = signUpSchema.safeParse(form);
+  errors.value = result.success ? {} : fieldErrors(result.error);
+  if (!result.success) return;
 
-function handleSubmit() {
-  const payload = {
-    age: Number(age.value),
-    email: email.value,
-    password: password.value,
-    confirmPassword: confirmPassword.value,
-  };
-
-  const emailResult = emailSchema.safeParse({ email: email.value });
-
-  if (!emailResult.success)
-    return showError(
-      `${(emailResult.error.issues[0].path[0], emailResult.error.issues[0].message)}`,
+  submitting.value = true;
+  try {
+    const { email, firstName, password, ageConfirmed } = result.data;
+    await register({ email, firstName: firstName || undefined, password, ageConfirmed });
+    const next = typeof route.query.redirect === "string" && route.query.redirect.startsWith("/")
+      ? route.query.redirect
+      : "/explore";
+    router.replace(next);
+  } catch (error) {
+    // Field problems from the server go next to their fields; the rest above the button.
+    const serverErrors = Object.fromEntries(
+      Object.entries(error.fieldErrors ?? {}).map(([field, messages]) => [field, messages[0]]),
     );
-
-  if (step.value !== 2) return (step.value += 1);
-
-  const result = authSchema.safeParse(payload);
-  if (!result.success)
-    return showError(
-      `${(result.error.issues[0].path[0], result.error.issues[0].message)}`,
-    );
+    errors.value = serverErrors;
+    emailTaken.value = error.status === 409;
+    if (error.status === 409 || Object.keys(serverErrors).length === 0) formError.value = error.message;
+    if (serverErrors.email) step.value = 1;
+  } finally {
+    submitting.value = false;
+  }
 }
 </script>
 
 <template>
-  <div
-    class="border-2 border-gray-300 rounded-xl h-[500px] p-8 w-1/3 flex flex-col items-center gap-4 text-center">
-    <figure class="w-20 h-auto">
-      <img :src="logoImg" alt="" class="w-full h-full inline-block" />
-    </figure>
+  <div class="w-full max-w-md rounded-3xl border border-line-strong bg-surface p-6 sm:p-8">
+    <div class="flex flex-col items-center gap-3 text-center">
+      <img :src="logoImg" alt="" class="w-16 h-auto" />
+      <h1 class="font-display text-2xl font-bold">Join Novashelf</h1>
+      <p class="text-muted">
+        Free, and it takes a minute. Keep track of what you've read and follow the topics you
+        love.
+      </p>
+    </div>
 
-    <h3 class="text-2xl font-medium">Join the shelf</h3>
-
-    <p class="w-4/5">
-      Create an account to save articles, track what you've read, and explore
-      space at your own pace.
-    </p>
-
+    <!-- Step 1: email -->
     <form
-      @submit.prevent="handleSubmit"
-      :class="`flex flex-col items-stretch justify-stretch w-full mt-4 ${error ? 'space-y-2' : 'space-y-4'}`">
-      <input
+      v-if="step === 1"
+      class="mt-8 flex flex-col gap-5"
+      novalidate
+      @submit.prevent="continueToDetails">
+      <TextField
+        id="signup-email"
+        v-model="form.email"
+        label="Email"
         type="email"
-        placeholder="Email"
-        v-model="email"
-        :class="`border-2 border-gray-300 rounded-sm p-2 focus:outline-none ${step === 1 ? 'block' : 'hidden'}`" />
+        autocomplete="email"
+        :error="errors.email" />
+      <button type="submit" class="rounded-full bg-action text-on-action py-3 font-medium">
+        Continue
+      </button>
+    </form>
 
-      <input
+    <!-- Step 2: the rest -->
+    <form v-else class="mt-8 flex flex-col gap-5" novalidate @submit.prevent="createAccount">
+      <div class="flex items-center justify-between gap-3 rounded-xl bg-page px-4 py-3 text-sm">
+        <span class="truncate"><span class="text-muted">Email:</span> {{ form.email }}</span>
+        <button type="button" class="shrink-0 font-medium text-link" @click="changeEmail">Change</button>
+      </div>
+
+      <TextField
+        id="signup-first-name"
+        v-model="form.firstName"
+        label="First name"
+        autocomplete="given-name"
+        hint="Optional. We'll use it to say hello."
+        :error="errors.firstName" />
+      <TextField
+        id="signup-password"
+        v-model="form.password"
+        label="Password"
         type="password"
-        placeholder="Password"
-        v-model="password"
-        :class="`border-2 border-gray-300 rounded-sm p-2 focus:outline-none ${step === 2 ? 'block' : 'hidden'}`" />
-
-      <input
+        autocomplete="new-password"
+        hint="At least 8 characters. A short phrase works well."
+        :error="errors.password" />
+      <TextField
+        id="signup-confirm"
+        v-model="form.confirmPassword"
+        label="Repeat password"
         type="password"
-        placeholder="Repeat Password"
-        v-model="confirmPassword"
-        :class="`border-2 border-gray-300 rounded-sm p-2 focus:outline-none ${step === 2 ? 'block' : 'hidden'}`" />
+        autocomplete="new-password"
+        :error="errors.confirmPassword" />
 
-      <input
-        type="number"
-        placeholder="How old are you?"
-        v-model="age"
-        :class="`border-2 border-gray-300 rounded-sm p-2 focus:outline-none ${step === 2 ? 'block' : 'hidden'}`" />
+      <div class="flex flex-col gap-1.5">
+        <label class="flex items-start gap-3 text-sm">
+          <input
+            id="signup-age"
+            v-model="form.ageConfirmed"
+            type="checkbox"
+            :aria-invalid="errors.ageConfirmed ? 'true' : undefined"
+            class="mt-0.5 size-4 shrink-0 accent-action" />
+          <span>I'm 13 or older.</span>
+        </label>
+        <p v-if="errors.ageConfirmed" class="text-sm text-link" role="alert">{{ errors.ageConfirmed }}</p>
+      </div>
 
-      <p
-        :class="`${error ? 'block' : 'hidden'} text-base-red text-left text-sm`">
-        {{ error }}
+      <p v-if="formError" class="rounded-xl bg-page px-4 py-3 text-sm" role="alert">
+        {{ formError }}
+        <RouterLink
+          v-if="emailTaken"
+          :to="{ path: '/login', query: { email: form.email, redirect: route.query.redirect } }"
+          class="font-medium text-link underline underline-offset-2">
+          Sign in
+        </RouterLink>
       </p>
 
       <button
-        class="block bg-base-red/80 hover:bg-base-red text-gray-100 p-2 rounded-sm">
-        {{ step === 1 ? "Sign Up" : "Create an account" }}
+        type="submit"
+        class="rounded-full bg-action text-on-action py-3 font-medium disabled:opacity-60"
+        :disabled="submitting">
+        {{ submitting ? "Creating your account…" : "Create account" }}
       </button>
     </form>
+
+    <p class="mt-6 text-center text-sm text-muted">
+      Already have an account?
+      <RouterLink
+        :to="{ path: '/login', query: { redirect: route.query.redirect } }"
+        class="font-medium text-link">
+        Sign in
+      </RouterLink>
+    </p>
   </div>
 </template>

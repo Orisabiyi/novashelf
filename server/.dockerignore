@@ -1,0 +1,5 @@
+**/bin/
+**/obj/
+Novashelf.Api.Tests/
+scripts/
+*.md
