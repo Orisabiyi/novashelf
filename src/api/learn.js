@@ -26,7 +26,7 @@ let tracks = null;
 
 /** All tracks (fetched once per visit; the curriculum rarely changes). @returns {Promise<TrackSummary[]>} */
 export function getTracks() {
-  tracks ??= apiGet("/learn/").catch((error) => {
+  tracks ??= apiGet("/learn").catch((error) => {
     tracks = null;
     throw error;
   });
