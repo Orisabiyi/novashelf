@@ -1,6 +1,7 @@
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Novashelf.Api.Data;
 
 namespace Novashelf.Api.Accounts;
@@ -76,20 +77,37 @@ public static class AccountSetup
         services.AddScoped<IReadMarkers>(sp => sp.GetRequiredService<ReadingHistory>());
         services.AddScoped<FollowedTopics>();
 
-        // Per-IP limit on sign-in and sign-up, on top of per-account lockout.
+        // Per-address limits on sign-in, sign-up, password changes and deletion, on top of
+        // per-account lockout. See ClientAddress for where the addresses come from.
+        services.AddSingleton<ClientAddress>();
         services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             options.AddPolicy(AuthRateLimitPolicy, context => RateLimitPartition.GetFixedWindowLimiter(
-                context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-                _ => new FixedWindowRateLimiterOptions
-                {
-                    PermitLimit = 10,
-                    Window = TimeSpan.FromMinutes(1),
-                    QueueLimit = 0,
-                }));
+                Addresses(context).Visitor(context), _ => PerMinute(10)));
+
+            // Also per connecting address, across the same endpoints. Looser, because many readers
+            // share each of Vercel's addresses; it caps callers who forge X-Forwarded-For to look
+            // like many readers.
+            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+                IsAuthLimited(context)
+                    ? RateLimitPartition.GetFixedWindowLimiter(Addresses(context).Connecting(context), _ => PerMinute(60))
+                    : RateLimitPartition.GetNoLimiter(""));
         });
 
         return services;
     }
+
+    private static ClientAddress Addresses(HttpContext context) =>
+        context.RequestServices.GetRequiredService<ClientAddress>();
+
+    private static bool IsAuthLimited(HttpContext context) =>
+        context.GetEndpoint()?.Metadata.GetMetadata<EnableRateLimitingAttribute>()?.PolicyName == AuthRateLimitPolicy;
+
+    private static FixedWindowRateLimiterOptions PerMinute(int permits) => new()
+    {
+        PermitLimit = permits,
+        Window = TimeSpan.FromMinutes(1),
+        QueueLimit = 0,
+    };
 }

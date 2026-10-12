@@ -1,7 +1,6 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.HttpOverrides;
 using Novashelf.Api.Accounts;
 using Novashelf.Api.Data;
 using Novashelf.Api.Endpoints;
@@ -75,28 +74,7 @@ builder.Services.AddHttpClient<PageExtractor>(c =>
     c.DefaultRequestHeaders.UserAgent.ParseAdd($"Mozilla/5.0 (compatible; {userAgent})");
 }).ConfigurePrimaryHttpMessageHandler(OutboundGuard.CreateHandler);
 
-// In production requests arrive through Vercel and then the host's load balancer, each adding itself to
-// X-Forwarded-For. Without this every visitor would share the proxy's address, and the per-IP
-// sign-in limit would lock everyone out together. Proxy:Hops is the number of proxies to trust.
-builder.Services.Configure<ForwardedHeadersOptions>(options =>
-{
-    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-    options.ForwardLimit = builder.Configuration.GetValue("Proxy:Hops", 2);
-    // The proxies' addresses aren't fixed, so trust the hop count instead of a list.
-    options.KnownIPNetworks.Clear();
-    options.KnownProxies.Clear();
-});
-var behindProxy = !builder.Environment.IsDevelopment();
-
 var app = builder.Build();
-
-// TEMPORARY (see /api/debug/forwarding): keep X-Forwarded-For as it arrived.
-app.Use((context, next) =>
-{
-    context.Items["RawForwardedFor"] = context.Request.Headers["X-Forwarded-For"].ToString();
-    return next(context);
-});
-if (behindProxy) app.UseForwardedHeaders();
 
 await app.MigrateDatabaseAsync();
 
@@ -113,24 +91,6 @@ if (accountsEnabled)
 app.MapContentEndpoints();
 app.MapImageEndpoints();
 app.MapLearnEndpoints();
-// TEMPORARY: shows how the proxies in front of the API forward the caller's address, so the
-// rate limiter can be keyed on the right value. Echoes only the caller's own request headers.
-app.MapGet("/api/debug/forwarding", (HttpContext context) =>
-{
-    string? H(string name) => context.Request.Headers[name].ToString() is { Length: > 0 } v ? v : null;
-    return TypedResults.Ok(new
-    {
-        remoteIp = context.Connection.RemoteIpAddress?.ToString(),
-        rawForwardedFor = context.Items["RawForwardedFor"] as string,
-        originalFor = H("X-Original-For"),
-        remainingFor = H("X-Forwarded-For"),
-        cfConnectingIp = H("CF-Connecting-IP"),
-        trueClientIp = H("True-Client-IP"),
-        xRealIp = H("X-Real-IP"),
-        xVercelForwardedFor = H("X-Vercel-Forwarded-For"),
-        xVercelId = H("X-Vercel-Id"),
-    });
-});
 app.MapAuthEndpoints(accountsEnabled);
 if (accountsEnabled) app.MapMeEndpoints();
 

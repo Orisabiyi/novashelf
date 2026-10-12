@@ -26,3 +26,7 @@ services:
         sync: false
       - key: Images__SigningKey
         generateValue: true
+      # Render's Cloudflare edge sets this to the connecting address and rejects requests that
+      # forge it, so the sign-in rate limits can trust it (see Accounts/ClientAddress.cs).
+      - key: Proxy__ClientAddressHeader
+        value: CF-Connecting-IP
