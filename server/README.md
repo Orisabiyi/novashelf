@@ -26,7 +26,7 @@ or API keys are needed.
 | `ConnectionStrings:Migrations` | Optional direct (non-pooler) connection used to apply migrations; defaults to `Default`. |
 | `Database:MigrateOnStartup` | Apply pending migrations when the API starts (default `true`). |
 | `Images:SigningKey` | Secret used to sign `/api/img` URLs. Optional in development (a random key is generated per run, so image URLs from before a restart stop working until the page reloads). **Set it in production**, e.g. `dotnet user-secrets set "Images:SigningKey" "<long random string>"` locally or an environment variable on the host (render.yaml generates one). |
-| `Proxy:Hops` | Number of proxies in front of the API whose `X-Forwarded-For` entries are trusted (default `2`: Vercel, then the host's load balancer). Used outside Development only, so the per-IP sign-in limit sees each visitor's own address. |
+| `Proxy:ClientAddressHeader` | Header set by the edge in front of the API with the address that connected to it, e.g. `CF-Connecting-IP` on Render (Cloudflare rejects requests that forge it). Used for the sign-in rate limits, together with the `X-Forwarded-For` entry before that address (the reader, when the request came through Vercel). Leave unset on hosts without such an edge: anyone could set the header. |
 
 ## Run
 
@@ -109,8 +109,8 @@ dotnet test server
 ### Accounts
 
 Signed in with an HttpOnly cookie. Sign-in, sign-up, password changes and account deletion are
-limited to 10 requests a minute per address, and an account locks for 5 minutes after 5 wrong
-passwords.
+limited to 10 requests a minute per reader and 60 a minute per connecting address (see
+`Proxy:ClientAddressHeader`), and an account locks for 5 minutes after 5 wrong passwords.
 
 | Method & path | Description |
 |---|---|
