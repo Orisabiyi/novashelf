@@ -14,10 +14,8 @@ const { account, updateAccount, deleteAccount } = useAuth();
 const preferences = useReaderPreferences();
 const { followed } = useFollowedTopics();
 
-/** First message for a field from an API validation error. */
 const fieldError = (error, field) => error?.fieldErrors?.[field]?.[0] ?? "";
 
-// Profile
 const profile = reactive({ firstName: account.value?.firstName ?? "", error: "", saved: false, saving: false });
 watch(account, (a) => a && !profile.saving && (profile.firstName = a.firstName ?? ""));
 const nameChanged = computed(() => (profile.firstName.trim() || null) !== (account.value?.firstName ?? null));
@@ -36,14 +34,12 @@ async function saveProfile() {
   }
 }
 
-// Reading settings (saved to the account automatically)
 const READING_GROUPS = [
   { key: "fontSize", label: "Text size", options: FONT_SIZES },
   { key: "width", label: "Line width", options: WIDTHS },
   { key: "theme", label: "Theme", options: THEMES },
 ];
 
-// Password
 const password = reactive({ current: "", next: "", errors: {}, error: "", saved: false, saving: false });
 
 async function savePassword() {
@@ -66,7 +62,6 @@ async function savePassword() {
   }
 }
 
-// History
 const history = reactive({ confirming: false, cleared: false, error: "" });
 
 async function confirmClearHistory() {
@@ -80,7 +75,6 @@ async function confirmClearHistory() {
   }
 }
 
-// Delete account
 const removal = reactive({ open: false, password: "", error: "", deleting: false });
 
 async function confirmDelete() {
@@ -120,7 +114,6 @@ const optionClass = (selected) => [
         <p class="text-muted">Signed in as <span class="text-ink">{{ account?.email }}</span></p>
       </header>
 
-      <!-- Profile -->
       <form :class="card" novalidate aria-labelledby="profile-heading" @submit.prevent="saveProfile">
         <div>
           <h2 id="profile-heading" class="font-display text-xl font-bold">Profile</h2>
@@ -144,7 +137,6 @@ const optionClass = (selected) => [
         </div>
       </form>
 
-      <!-- Reading -->
       <section :class="card" aria-labelledby="reading-heading">
         <div>
           <h2 id="reading-heading" class="font-display text-xl font-bold">Reading</h2>
@@ -177,13 +169,11 @@ const optionClass = (selected) => [
         </p>
       </section>
 
-      <!-- Password -->
       <form :class="card" novalidate aria-labelledby="password-heading" @submit.prevent="savePassword">
         <div>
           <h2 id="password-heading" class="font-display text-xl font-bold">Password</h2>
           <p class="text-muted">You'll stay signed in here. Other devices will need the new password.</p>
         </div>
-        <!-- Lets password managers match the change to this account. -->
         <input type="email" :value="account?.email" autocomplete="username" class="hidden" readonly tabindex="-1" aria-hidden="true" />
         <div class="grid gap-5 sm:grid-cols-2">
           <TextField
@@ -214,7 +204,6 @@ const optionClass = (selected) => [
         </div>
       </form>
 
-      <!-- History -->
       <section :class="card" aria-labelledby="history-heading">
         <div>
           <h2 id="history-heading" class="font-display text-xl font-bold">Reading history</h2>
@@ -240,7 +229,6 @@ const optionClass = (selected) => [
         <p v-if="history.error" class="text-sm text-link" role="alert">{{ history.error }}</p>
       </section>
 
-      <!-- Delete account -->
       <section class="rounded-3xl border-2 border-brand/50 p-6 sm:p-8 space-y-5" aria-labelledby="delete-heading">
         <div>
           <h2 id="delete-heading" class="font-display text-xl font-bold text-brand">Delete account</h2>

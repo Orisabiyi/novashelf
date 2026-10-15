@@ -19,13 +19,11 @@ const SUGGESTIONS = [
   { label: "Hubble", q: "hubble" },
   { label: "Space station", q: "space station" },
 ];
-// Shown before anyone searches, so the page is never empty.
 const FEATURED_QUERY = "Hubble";
 
 const route = useRoute();
 const router = useRouter();
 
-// The search lives in the URL (?q=saturn) so results can be shared and Back works.
 const query = computed(() =>
   typeof route.query.q === "string" ? route.query.q.trim().slice(0, 100) : "",
 );

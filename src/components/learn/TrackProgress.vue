@@ -2,7 +2,6 @@
 import { computed } from "vue";
 import { useLessonProgress } from "@/composables/useLessonProgress";
 
-// "2 of 5 finished" with a bar. Renders nothing until at least one lesson is finished.
 const props = defineProps({
   track: {
     type: Object,

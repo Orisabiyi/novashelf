@@ -58,7 +58,6 @@ const lessonCount = computed(() => tracks.value.reduce((sum, t) => sum + t.lesso
     </template>
 
     <template v-else>
-      <!-- The recommended first path -->
       <RouterLink
         v-if="startTrack"
         :to="`/learn/${startTrack.slug}`"
@@ -95,7 +94,6 @@ const lessonCount = computed(() => tracks.value.reduce((sum, t) => sum + t.lesso
         </div>
       </RouterLink>
 
-      <!-- Everything else -->
       <section aria-labelledby="paths-heading" class="space-y-5">
         <h2 id="paths-heading" class="font-display text-2xl font-bold">Then explore further</h2>
         <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

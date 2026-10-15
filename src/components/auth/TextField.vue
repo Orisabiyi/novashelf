@@ -18,7 +18,6 @@ const props = defineProps({
     type: String,
     default: "off",
   },
-  /** Shown under the field when there's no error, e.g. "Optional". */
   hint: {
     type: String,
     default: "",

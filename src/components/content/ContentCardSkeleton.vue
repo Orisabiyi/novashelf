@@ -1,6 +1,5 @@
 <script setup>
 defineProps({
-  /** Mirrors ContentCard's variants so the layout doesn't jump when content arrives. */
   variant: {
     type: String,
     default: "stacked",

@@ -21,15 +21,12 @@ import { imageAt, imageSrcset } from "@/utils/images";
 const route = useRoute();
 const router = useRouter();
 
-// The day lives in the URL (?date=2001-07-04) so it can be shared and Back works.
 const requestedDate = computed(() =>
   isIsoDate(route.query.date) ? String(route.query.date) : null,
 );
 
-/** @type {import("vue").Ref<import("@/api/content").ContentItem | null>} */
 const picture = ref(null);
 const loading = ref(true);
-/** @type {import("vue").Ref<import("@/api/client").ApiError | null>} */
 const error = ref(null);
 const imageLoaded = ref(false);
 const imageFailed = ref(false);
@@ -80,12 +77,10 @@ const goToday = () => {
 };
 const surprise = () => goTo(randomDateBetween(APOD_FIRST_DATE, maxDate.value));
 
-// The archive below: newest first, loading more as you scroll.
 const archive = usePagedList(ref((page, options) => getApodArchive({ page }, options)));
 const sentinel = ref(null);
 useInfiniteScroll(sentinel, archive);
 
-// The archive's first entry is the latest day, which also tells us where "next" ends.
 watch(
   () => archive.items.value[0],
   (first) => first && !latestDate.value && (latestDate.value = apodDate(first.id)),
@@ -107,7 +102,6 @@ const paragraphs = computed(() =>
       </p>
     </header>
 
-    <!-- Day navigation -->
     <nav aria-label="Choose a day" class="flex flex-wrap items-center gap-2">
       <button
         type="button"
@@ -157,7 +151,6 @@ const paragraphs = computed(() =>
       </button>
     </nav>
 
-    <!-- The picture -->
     <div
       v-if="error"
       role="alert"
@@ -262,7 +255,6 @@ const paragraphs = computed(() =>
       </div>
     </article>
 
-    <!-- Archive -->
     <section aria-labelledby="archive-heading" class="space-y-5 pt-6">
       <div>
         <p class="text-sm font-medium text-link">Back to 1995</p>

@@ -13,7 +13,6 @@ import { TOPIC_ICONS } from "@/utils/topics";
 const route = useRoute();
 const router = useRouter();
 
-// The selected topic lives in the URL (?topic=mars) so it survives reloads and can be shared.
 const topic = computed(() =>
   typeof route.query.topic === "string" && route.query.topic
     ? route.query.topic
@@ -29,7 +28,6 @@ onMounted(async () => {
   try {
     topics.value = await getTopics();
   } catch {
-    // Without the topic list you can still read the full feed.
   }
 });
 
@@ -53,11 +51,9 @@ async function onToggleFollow(slug) {
   }
 }
 
-// Load more as the bottom of the list nears the viewport (this also does the first load).
 const sentinel = ref(null);
 useInfiniteScroll(sentinel, { loading, hasMore, error, loadMore });
 
-// Includes the moment before the session check finishes, when the feed hasn't started yet.
 const initialLoad = computed(
   () => (loading.value || status.value === "unknown") && items.value.length === 0 && !error.value,
 );
@@ -95,7 +91,6 @@ const chipClass = (selected) =>
           </p>
         </div>
 
-        <!-- Follow the topic you're looking at; it then shows up in your Following feed. -->
         <button
           v-if="isSignedIn && selectedTopic"
           type="button"
@@ -123,7 +118,6 @@ const chipClass = (selected) =>
             Follow {{ selectedTopic.name }}
           </template>
         </button>
-        <!-- Signed out: following needs an account. -->
         <RouterLink
           v-else-if="status === 'signedOut' && selectedTopic"
           :to="{ path: '/login', query: { redirect: route.fullPath } }"
@@ -182,7 +176,6 @@ const chipClass = (selected) =>
         class="bg-action px-4 py-1 rounded-md text-on-action">
         Sign in
       </RouterLink>
-      <!-- A 400 (e.g. an unknown topic in the URL) won't succeed on retry. -->
       <button
         v-else-if="error.status === 400"
         type="button"
@@ -199,7 +192,6 @@ const chipClass = (selected) =>
       </button>
     </div>
 
-    <!-- Following nothing yet: pick topics right here. -->
     <div
       v-else-if="isFollowingFeed && isSignedIn && isEmpty && followed.length === 0"
       class="flex flex-col items-center gap-6 rounded-3xl bg-surface px-6 py-14 text-center">

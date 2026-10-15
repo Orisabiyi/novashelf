@@ -6,17 +6,14 @@ import { imageAt, imageSrcset } from "@/utils/images";
 import { isRead } from "@/composables/useReadState";
 
 const props = defineProps({
-  /** @type {import("@/api/content").ContentItem} */
   item: {
     type: Object,
     required: true,
   },
-  /** Where the tile goes; defaults to the reader. */
   to: {
     type: [String, Object],
     default: null,
   },
-  /** Small line above the title, e.g. a date. */
   label: {
     type: String,
     default: "",
@@ -33,7 +30,6 @@ const hasImage = computed(() => props.item.imageUrl && !imageFailed.value);
 const target = computed(() => props.to ?? `/read/${props.item.id}`);
 const opensReader = computed(() => !props.to);
 
-// Tiles that open the reader warm it up on hover/focus/touch, like content cards.
 function onIntent() {
   if (opensReader.value) prefetchReadable(props.item, imageEl.value?.currentSrc);
 }
@@ -65,7 +61,6 @@ function onOpen() {
       decoding="async"
       class="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-105"
       @error="imageFailed = true" />
-    <!-- No picture (e.g. some of the earliest APODs): show the title on a plain tile. -->
     <div v-else class="absolute inset-0 grid place-items-center p-4 text-center">
       <i class="pi pi-star text-brand" style="font-size: 1.5rem" aria-hidden="true"></i>
     </div>
@@ -78,7 +73,6 @@ function onOpen() {
       Read
     </span>
 
-    <!-- Text sits on a dark scrim over the photo, so it's white in either theme. -->
     <div
       class="absolute inset-x-0 bottom-0 flex flex-col gap-0.5 bg-gradient-to-t from-black/85 via-black/50 to-transparent p-3 pt-10 text-white">
       <span v-if="label" class="text-xs text-white/75">{{ label }}</span>

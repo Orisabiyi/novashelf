@@ -8,7 +8,6 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  /** The newest articles (page 1 of the feed), to count what's new. */
   articles: {
     type: Array,
     default: () => [],

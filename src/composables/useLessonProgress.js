@@ -2,7 +2,6 @@ import { ref, watch } from "vue";
 import { getCompletedLessons, setLessonCompleted } from "@/api/me";
 import { loadSession, useAuth } from "@/composables/useAuth";
 
-// Finished lessons ("track/lesson" keys) for the signed-in reader, loaded once per sign-in.
 const completed = ref(new Set());
 let loading = null;
 
@@ -27,11 +26,6 @@ export function loadLessonProgress() {
   return loading;
 }
 
-/**
- * Mark a lesson finished or not, for signed-in readers. Waits for the session check (a lesson
- * opened directly can be on screen before it finishes). Updates straight away; rolls back and
- * rethrows on failure.
- */
 export async function setCompleted(track, lesson, done) {
   await loadSession();
   if (!isSignedIn.value || completed.value.has(key(track, lesson)) === done) return;
@@ -54,7 +48,6 @@ export function useLessonProgress() {
   const isCompleted = (track, lesson) => completed.value.has(key(track, lesson));
   return {
     isCompleted,
-    /** How many of a track's lessons are finished. @param {{ slug: string, lessons: { slug: string }[] }} track */
     completedIn: (track) => track.lessons.filter((l) => isCompleted(track.slug, l.slug)).length,
   };
 }

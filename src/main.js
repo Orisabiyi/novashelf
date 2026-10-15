@@ -7,7 +7,6 @@ import { loadSession } from "@/composables/useAuth";
 import { applySavedTheme } from "@/composables/useReaderPreferences";
 
 applySavedTheme();
-// Find out who's signed in without holding up the first render.
 loadSession();
 
 const app = createApp(App);

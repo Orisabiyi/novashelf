@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-// Mirrors the API's rules (server/Novashelf.Api/Accounts/AccountRequests.cs); the API is the
-// authority, these give instant feedback.
 export const PASSWORD_MIN = 8;
 export const PASSWORD_MAX = 128;
 export const FIRST_NAME_MAX = 60;
@@ -41,7 +39,6 @@ export const signInSchema = z.object({
   password: z.string().min(1, { error: "Enter your password." }),
 });
 
-/** The first message for each field from a failed safeParse, e.g. { email: "Enter a valid…" }. */
 export function fieldErrors(error: z.ZodError): Record<string, string> {
   const errors: Record<string, string> = {};
   for (const issue of error.issues) {

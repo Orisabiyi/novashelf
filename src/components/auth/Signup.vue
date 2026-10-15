@@ -10,7 +10,6 @@ const route = useRoute();
 const router = useRouter();
 const { register } = useAuth();
 
-// Two steps: the email first, then everything else.
 const step = ref(1);
 const form = reactive({
   email: "",
@@ -20,7 +19,6 @@ const form = reactive({
   ageConfirmed: false,
 });
 const errors = ref({});
-/** A problem with the whole request (e.g. the email already has an account). */
 const formError = ref("");
 const emailTaken = ref(false);
 const submitting = ref(false);
@@ -60,7 +58,6 @@ async function createAccount() {
       : "/explore";
     router.replace(next);
   } catch (error) {
-    // Field problems from the server go next to their fields; the rest above the button.
     const serverErrors = Object.fromEntries(
       Object.entries(error.fieldErrors ?? {}).map(([field, messages]) => [field, messages[0]]),
     );
@@ -85,7 +82,6 @@ async function createAccount() {
       </p>
     </div>
 
-    <!-- Step 1: email -->
     <form
       v-if="step === 1"
       class="mt-8 flex flex-col gap-5"
@@ -103,7 +99,6 @@ async function createAccount() {
       </button>
     </form>
 
-    <!-- Step 2: the rest -->
     <form v-else class="mt-8 flex flex-col gap-5" novalidate @submit.prevent="createAccount">
       <div class="flex items-center justify-between gap-3 rounded-xl bg-page px-4 py-3 text-sm">
         <span class="truncate"><span class="text-muted">Email:</span> {{ form.email }}</span>

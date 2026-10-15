@@ -9,7 +9,6 @@ onMounted(async () => {
   try {
     track.value = (await getTracks()).find((t) => t.startHere) ?? null;
   } catch {
-    // The banner still links to /learn without the lesson preview.
   }
 });
 

@@ -1,11 +1,5 @@
 import { onBeforeUnmount, ref, watch } from "vue";
 
-/**
- * Whether an element is (near) the viewport. Used as an infinite-scroll sentinel.
- *
- * @param {import("vue").Ref<Element | null>} target
- * @param {string} [rootMargin] how far ahead of the viewport counts as "in view"
- */
 export function useInView(target, rootMargin = "600px") {
   const inView = ref(false);
   const observer = new IntersectionObserver(

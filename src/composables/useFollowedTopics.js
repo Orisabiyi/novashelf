@@ -2,14 +2,12 @@ import { computed, ref, watch } from "vue";
 import { getFollowedTopics, setFollowedTopics } from "@/api/me";
 import { useAuth } from "@/composables/useAuth";
 
-// One shared list of followed topic slugs for the whole app, loaded once per sign-in.
 const followed = ref([]);
 const loaded = ref(false);
 let loading = null;
 
 const { isSignedIn } = useAuth();
 
-// Signing out (or in as someone else) starts over.
 watch(isSignedIn, (signedIn) => {
   followed.value = [];
   loaded.value = false;
@@ -17,7 +15,6 @@ watch(isSignedIn, (signedIn) => {
   if (signedIn) loadFollowedTopics();
 });
 
-/** Fetch the list once; later calls share the same request. */
 export function loadFollowedTopics() {
   if (!isSignedIn.value) return Promise.resolve();
   loading ??= getFollowedTopics()
@@ -26,16 +23,11 @@ export function loadFollowedTopics() {
       loaded.value = true;
     })
     .catch(() => {
-      // Try again next time something asks.
       loading = null;
     });
   return loading;
 }
 
-/**
- * Follow or unfollow a topic. Updates straight away and rolls back if saving fails.
- * @returns {Promise<void>} rejects with the API error so callers can show it
- */
 export async function toggleFollow(slug) {
   const before = followed.value;
   followed.value = before.includes(slug) ? before.filter((s) => s !== slug) : [...before, slug];

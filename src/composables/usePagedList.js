@@ -1,19 +1,10 @@
 import { ref, watch } from "vue";
 
-/**
- * A list that accumulates pages as the reader scrolls. When `source` changes (a new topic, a
- * new search), any in-flight request is aborted and the list starts over.
- *
- * @template T
- * @param {import("vue").Ref<((page: number, options: { signal: AbortSignal }) => Promise<{ items: T[], page: number, hasMore: boolean }>) | null>} source
- *   loads one page; null means "nothing to load" (e.g. an empty search box)
- */
 export function usePagedList(source) {
   const items = ref([]);
   const page = ref(0);
   const hasMore = ref(true);
   const loading = ref(false);
-  /** @type {import("vue").Ref<import("@/api/client").ApiError | null>} */
   const error = ref(null);
 
   let controller = null;

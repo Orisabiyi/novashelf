@@ -3,12 +3,6 @@
 @plugin "@tailwindcss/typography";
 
 /*
- * Novashelf palette: "Moonlight Grey", dark by default — warm charcoal page and cards,
- * light ink, a near-black navbar, with Mars red as the brand colour and slate as the
- * second colour. A light variant lives under data-theme="light" for reader preferences.
- * Use these tokens (bg-page, text-ink, bg-action …) instead of Tailwind's stock grays so
- * both themes stay consistent.
- *
  * Red has three jobs, because #d85357 is too light for small text on light backgrounds:
  *   brand     logo, display headlines, icons
  *   action    button fills; pair with text-on-action (4.6:1 dark, 5.2:1 light)
@@ -42,7 +36,6 @@
   color-scheme: dark;
 }
 
-/* Light theme: set data-theme="light" on <html> (wired up with reader preferences). */
 :root[data-theme="light"] {
   --color-action: #c13f45;
   --color-on-action: #ffffff;
@@ -58,7 +51,6 @@
   --color-slate: #4a5568;
   --color-on-slate: #ffffff;
 
-  /* The navbar stays a dark graphite band in the light theme. */
   --color-nav: #1f1d1c;
 
   color-scheme: light;
@@ -70,7 +62,6 @@ body {
   color: var(--color-ink);
 }
 
-/* Article typography (the reader) uses the palette, so it follows the theme. */
 .prose {
   --tw-prose-body: var(--color-ink);
   --tw-prose-headings: var(--color-ink);

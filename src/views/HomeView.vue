@@ -16,17 +16,14 @@ import { useFollowedTopics } from "@/composables/useFollowedTopics";
 const { status, isSignedIn, displayName } = useAuth();
 const { followed } = useFollowedTopics();
 
-// Arriving from Settings after deleting an account.
 const route = useRoute();
 const accountDeleted = ref(route.query.deleted === "1");
 
-// Two rows: [small, feature] then [feature, small], matching Explore.
 const LATEST_VARIANTS = ["stacked", "feature", "feature", "stacked"];
 
 const apod = ref(null);
 const apodLoading = ref(true);
 const latest = ref([]);
-/** Page 1 of the feed, used to count what's new for signed-in readers. */
 const feedItems = ref([]);
 const latestLoading = ref(true);
 
@@ -63,18 +60,15 @@ onMounted(() => {
       </button>
     </div>
 
-    <!-- Pulled up under the floating navbar so the starfield shows around it. -->
     <section class="relative overflow-hidden -mt-20 pt-20">
       <StarField />
       <div class="mars-horizon" aria-hidden="true"></div>
-      <!-- Fade the glow into the page so the hero has no hard bottom edge. -->
       <div
         class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-page pointer-events-none"
         aria-hidden="true"></div>
 
       <div
         class="relative grid items-center gap-12 px-6 pt-10 pb-24 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16 lg:px-10 lg:pt-16 lg:pb-32 2xl:px-48">
-        <!-- Signed in: a personal welcome instead of the pitch. -->
         <WelcomeBack
           v-if="isSignedIn"
           :name="displayName"
