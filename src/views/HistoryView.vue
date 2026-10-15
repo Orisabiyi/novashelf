@@ -15,7 +15,6 @@ const { items, hasMore, loading, error, loadMore } = list;
 const sentinel = ref(null);
 useInfiniteScroll(sentinel, list);
 
-// Group entries by the day they were read: Today, Yesterday, then dates.
 const groups = computed(() => {
   const dayFormat = new Intl.DateTimeFormat("en", { weekday: "long", month: "long", day: "numeric" });
   const today = new Date().toDateString();

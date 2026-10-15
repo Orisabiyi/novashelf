@@ -10,7 +10,6 @@ using Novashelf.Api.Sources;
 
 namespace Novashelf.Api.Accounts;
 
-/// <summary>The signed-in reader's own data under /api/me.</summary>
 public static class MeEndpoints
 {
     public sealed record RecordReadRequest(string? Id);
@@ -27,7 +26,6 @@ public static class MeEndpoints
     {
         var me = app.MapGroup("/api/me").RequireAuthorization();
 
-        // The account itself (GET /api/me is with sign-in, in AuthEndpoints).
         app.MapPatch("/api/me", UpdateAccount).RequireAuthorization();
         app.MapDelete("/api/me", DeleteAccount).RequireAuthorization().RequireRateLimiting(AccountSetup.AuthRateLimitPolicy);
         me.MapPost("/password", ChangePassword).RequireRateLimiting(AccountSetup.AuthRateLimitPolicy);
@@ -63,10 +61,6 @@ public static class MeEndpoints
         });
     }
 
-    /// <summary>
-    /// Called by the reader page once an item is actually open (prefetching on hover doesn't count).
-    /// The item is looked up here rather than trusted from the request.
-    /// </summary>
     private static async Task<Results<NoContent, NotFound, ProblemHttpResult>> RecordRead(
         RecordReadRequest request, HttpContext context, UserManager<AppUser> users, ContentResolver resolver,
         ReadingHistory history, CancellationToken ct)
@@ -102,7 +96,6 @@ public static class MeEndpoints
         return TypedResults.Ok(new FollowedTopicsResponse(topics.Select(t => t.Slug)));
     }
 
-    /// <summary>Replaces the whole list, so following or unfollowing is one idempotent request.</summary>
     private static async Task<Results<Ok<FollowedTopicsResponse>, ProblemHttpResult>> SetTopics(
         TopicsRequest request, HttpContext context, UserManager<AppUser> users, FollowedTopics followed,
         CancellationToken ct)
@@ -124,7 +117,6 @@ public static class MeEndpoints
         return TypedResults.Ok(new FollowedTopicsResponse(saved.Select(t => t.Slug)));
     }
 
-    /// <summary>The saved reading settings, or 204 when the reader hasn't saved any yet.</summary>
     private static async Task<Results<Ok<PreferencesDto>, NoContent>> GetPreferences(
         HttpContext context, UserManager<AppUser> users, AppDbContext db, CancellationToken ct)
     {
@@ -193,7 +185,6 @@ public static class MeEndpoints
         return TypedResults.Ok(completed);
     }
 
-    /// <summary>Marks a lesson finished. Idempotent: finishing it again keeps the first date.</summary>
     private static async Task<Results<NoContent, NotFound>> CompleteLesson(
         string track, string lesson, HttpContext context, UserManager<AppUser> users, AppDbContext db,
         Curriculum curriculum, TimeProvider time, CancellationToken ct)
@@ -277,7 +268,6 @@ public static class MeEndpoints
         return TypedResults.NoContent();
     }
 
-    /// <summary>Deletes the account and everything stored for it (history, topics, settings, progress).</summary>
     private static async Task<Results<NoContent, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>> DeleteAccount(
         [FromBody] DeleteAccountRequest request, HttpContext context, UserManager<AppUser> users,
         SignInManager<AppUser> signIn)
@@ -301,10 +291,6 @@ public static class MeEndpoints
 
     private enum PasswordCheck { Right, Wrong, LockedOut }
 
-    /// <summary>
-    /// Confirms the reader's password before a sensitive change. Wrong guesses count towards the
-    /// same lockout as sign-in.
-    /// </summary>
     private static async Task<PasswordCheck> CheckPasswordAsync(SignInManager<AppUser> signIn, AppUser user, string? password)
     {
         var check = await signIn.CheckPasswordSignInAsync(user, password ?? "", lockoutOnFailure: true);

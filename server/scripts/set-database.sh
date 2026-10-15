@@ -1,11 +1,4 @@
 #!/usr/bin/env bash
-# Stores a Neon (or any Postgres) connection string in .NET user-secrets for local development.
-#
-# Paste the postgresql://… URL from Neon's "Connect" dialog when asked. It isn't echoed, isn't
-# saved in shell history and never touches the repository. Both connection strings the API uses
-# are set: the pooled host for queries and the direct host for migrations.
-#
-# Usage (from the repo root): ./server/scripts/set-database.sh
 set -euo pipefail
 
 cd "$(dirname "$0")/../Novashelf.Api"

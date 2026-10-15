@@ -21,12 +21,9 @@ const proseSize = computed(
   () => FONT_SIZES.find((f) => f.value === preferences.fontSize)?.proseClass ?? "prose-lg",
 );
 
-/** @type {import("vue").Ref<import("@/api/content").ReadableContent | null>} */
 const readable = ref(null);
-/** What the card we came from already knew: lets the headline and picture show at once. */
 const preview = ref(null);
 const loading = ref(true);
-/** @type {import("vue").Ref<import("@/api/client").ApiError | null>} */
 const error = ref(null);
 const heroFailed = ref(false);
 const heroLoaded = ref(false);
@@ -44,12 +41,10 @@ async function load(id) {
   if (preview.value) document.title = `${preview.value.item.title} · Novashelf`;
 
   try {
-    // Usually already in flight (or done) from hovering the card.
     const result = await loadReadable(id);
     if (currentId !== id) return;
     readable.value = result;
     document.title = `${result.item.title} · Novashelf`;
-    // Now it's genuinely being read (prefetching on hover never records anything).
     markRead(result.item.id);
   } catch (e) {
     if (currentId === id) error.value = e;
@@ -115,7 +110,6 @@ const meta = computed(() => {
 });
 
 function goBack() {
-  // Return to wherever the reader came from (keeping Explore's scroll), else to Explore.
   if (window.history.state?.back) router.back();
   else router.push("/explore");
 }
@@ -135,7 +129,6 @@ function goBack() {
         <ReaderSettings />
       </div>
 
-      <!-- Error -->
       <div
         v-if="error"
         role="alert"
@@ -163,7 +156,6 @@ function goBack() {
         </div>
       </div>
 
-      <!-- Loading -->
       <div v-else-if="!item" class="space-y-6 animate-pulse" aria-busy="true" aria-label="Loading article">
         <div class="h-6 w-28 rounded-full bg-surface"></div>
         <div class="space-y-3">
@@ -177,7 +169,6 @@ function goBack() {
         </div>
       </div>
 
-      <!-- Article -->
       <template v-else>
         <header class="space-y-5">
           <span

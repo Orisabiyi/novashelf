@@ -6,10 +6,6 @@ namespace Novashelf.Api.Data;
 
 public static class DatabaseSetup
 {
-    /// <summary>
-    /// Registers the database when <c>ConnectionStrings:Default</c> is set; otherwise the app runs
-    /// on in-memory caches alone (handy for tests and quick local runs).
-    /// </summary>
     public static IServiceCollection AddNovashelfDatabase(this IServiceCollection services, IConfiguration config)
     {
         var connectionString = config.GetConnectionString("Default");
@@ -24,11 +20,8 @@ public static class DatabaseSetup
         return services;
     }
 
-    /// <summary>
-    /// Applies pending migrations at startup (default on; set Database:MigrateOnStartup=false to
-    /// manage them separately). Uses the direct connection when one is configured, because schema
-    /// changes and Neon's connection pooler don't mix well.
-    /// </summary>
+    // Migrations use the direct connection when there is one: schema changes and Neon's pooler
+    // don't mix well.
     public static async Task MigrateDatabaseAsync(this WebApplication app)
     {
         var config = app.Configuration;
@@ -51,10 +44,6 @@ public static class DatabaseSetup
     }
 }
 
-/// <summary>
-/// Lets <c>dotnet ef</c> build the context outside the running app, reading the same
-/// configuration (appsettings, user-secrets, environment variables).
-/// </summary>
 public sealed class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 {
     public AppDbContext CreateDbContext(string[] args)

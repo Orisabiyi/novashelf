@@ -7,9 +7,6 @@ public enum ContentKind
     Image,
 }
 
-/// <summary>
-/// A piece of readable content from any source, normalised to one shape for the front end.
-/// </summary>
 public sealed record ContentItem(
     string Id,
     ContentKind Kind,

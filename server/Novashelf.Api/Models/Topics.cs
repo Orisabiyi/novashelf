@@ -2,7 +2,6 @@ using System.Text.RegularExpressions;
 
 namespace Novashelf.Api.Models;
 
-/// <param name="Keywords">Matched against article titles (any keyword matches).</param>
 public sealed record Topic(string Slug, string Name, IReadOnlyList<string> Keywords)
 {
     // Whole words, plus plural/tense endings: "launch" matches "launches" and "launched", but
@@ -14,7 +13,6 @@ public sealed record Topic(string Slug, string Name, IReadOnlyList<string> Keywo
     public bool MatchesTitle(string title) => _titlePattern.IsMatch(title);
 }
 
-/// <summary>A topic label on a content item.</summary>
 public sealed record TopicTag(string Slug, string Name);
 
 public static class Topics
@@ -32,7 +30,6 @@ public static class Topics
         new("solar-system", "Solar System", ["jupiter", "saturn", "venus", "mercury", "asteroid", "comet", "solar"]),
     ];
 
-    /// <summary>The first topic (in list order) whose keywords appear in the title, if any.</summary>
     public static TopicTag? Tag(string title) =>
         All.FirstOrDefault(t => t.MatchesTitle(title)) is { } t ? new TopicTag(t.Slug, t.Name) : null;
 

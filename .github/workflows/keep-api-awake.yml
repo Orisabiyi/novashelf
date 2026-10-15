@@ -1,7 +1,4 @@
-# Render's free plan puts the API to sleep after 15 minutes without traffic, and waking it takes
-# up to a minute. Ping it every 10 minutes (GitHub often starts scheduled runs late, so 15 would
-# leave gaps). One always-on service stays within the free 750 instance hours a month.
-# GitHub pauses schedules after 60 days without commits; re-enable it from the Actions tab.
+# Render sleeps after 15 idle minutes; GitHub often starts scheduled runs late, hence every 10.
 name: Keep API awake
 
 on:

@@ -8,16 +8,10 @@ import { isRead } from "@/composables/useReadState";
 import { itemTag } from "@/utils/topics";
 
 const props = defineProps({
-  /** @type {import("@/api/content").ContentItem} */
   item: {
     type: Object,
     required: true,
   },
-  /**
-   * - stacked: image above text (default)
-   * - feature: spans two grid columns on large screens, image beside a bigger headline
-   * - compact: title only, for the landing page collage
-   */
   variant: {
     type: String,
     default: "stacked",
@@ -29,14 +23,12 @@ const imageFailed = ref(false);
 const imageEl = ref(null);
 
 const CARD_WIDTHS = [320, 480, 640, 960, 1280];
-// Roughly the rendered width: one grid column (a feature image is half of two columns).
 const imageSizes = computed(() =>
   props.variant === "compact"
     ? "256px"
     : "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw",
 );
 
-// Hover, focus or touch signals intent: start loading the article before the click.
 function onIntent() {
   prefetchReadable(props.item, imageEl.value?.currentSrc);
 }

@@ -3,14 +3,6 @@ import { useInView } from "@/composables/useInView";
 
 const MARGIN = 600;
 
-/**
- * Calls `loadMore` while `sentinel` (an element after the list) is near the viewport. This also
- * does the first load, and keeps going if a page comes back short.
- *
- * @param {import("vue").Ref<Element | null>} sentinel
- * @param {{ loading: import("vue").Ref<boolean>, hasMore: import("vue").Ref<boolean>,
- *           error: import("vue").Ref<unknown>, loadMore: () => void }} list
- */
 export function useInfiniteScroll(sentinel, { loading, hasMore, error, loadMore }) {
   const nearBottom = useInView(sentinel, `${MARGIN}px`);
 

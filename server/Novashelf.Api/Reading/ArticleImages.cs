@@ -3,7 +3,6 @@ using Novashelf.Api.Images;
 
 namespace Novashelf.Api.Reading;
 
-/// <summary>Points article images at the resizing proxy, with a srcset so phones get small copies.</summary>
 public static class ArticleImages
 {
     private static readonly int[] SrcsetWidths = [480, 640, 960, 1280, 1600];

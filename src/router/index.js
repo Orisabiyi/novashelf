@@ -97,8 +97,6 @@ const router = createRouter({
   ],
 });
 
-// Sign-in and sign-up are for signed-out readers; anyone else goes where they were heading.
-// Pages marked requiresAuth send signed-out readers to sign in first.
 router.beforeEach(async (to) => {
   if (!to.meta.guestOnly && !to.meta.requiresAuth) return true;
   await loadSession();
@@ -113,9 +111,7 @@ router.beforeEach(async (to) => {
   return true;
 });
 
-// Pages that know their own title (the reader) set it; everything else gets the default.
 router.afterEach((to) => {
-  // These pages set their own title once their content loads.
   if (!["read", "track", "lesson"].includes(String(to.name))) document.title = "Novashelf";
 });
 

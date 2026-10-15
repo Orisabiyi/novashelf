@@ -44,14 +44,12 @@ async function load() {
   }
 }
 
-// Current articles on the lesson's subject, to connect the basics to the news.
 async function loadNews(topic, id) {
   if (!topic) return;
   try {
     const feed = await getFeed({ topic });
     if (id === requestId) news.value = feed.items.filter((item) => item.imageUrl).slice(0, 3);
   } catch {
-    // Optional extra; the lesson stands on its own.
   }
 }
 
@@ -79,7 +77,6 @@ async function markFinished(done) {
   }
 }
 
-// Moving on to the next lesson counts as finishing this one.
 function onNext() {
   if (!finished.value) markFinished(true);
 }
@@ -141,7 +138,6 @@ const totalMinutes = computed(() =>
             <p class="text-lg text-muted">{{ lesson.lesson.summary }}</p>
           </header>
 
-          <!-- What to take away, in our own words -->
           <section aria-labelledby="key-ideas" class="rounded-3xl bg-surface p-6 ring-1 ring-brand/30">
             <h2 id="key-ideas" class="mb-4 flex items-center gap-2 font-display text-xl font-bold">
               <i class="pi pi-lightbulb text-brand" aria-hidden="true"></i>
@@ -157,7 +153,6 @@ const totalMinutes = computed(() =>
             </ol>
           </section>
 
-          <!-- Each source, credited -->
           <section
             v-for="section in lesson.sections"
             :key="section.sourceUrl"
@@ -201,7 +196,6 @@ const totalMinutes = computed(() =>
             </p>
           </section>
 
-          <!-- Finish the lesson -->
           <div
             v-if="isSignedIn"
             :class="[
@@ -237,7 +231,6 @@ const totalMinutes = computed(() =>
             to keep track of the lessons you finish.
           </p>
 
-          <!-- Previous / next -->
           <nav aria-label="Lessons" class="grid gap-3 border-t border-line pt-8 sm:grid-cols-2">
             <RouterLink
               v-if="lesson.previous"
@@ -270,7 +263,6 @@ const totalMinutes = computed(() =>
       </template>
     </div>
 
-    <!-- Connect the lesson to what's happening now -->
     <section
       v-if="news.length"
       aria-labelledby="in-the-news"

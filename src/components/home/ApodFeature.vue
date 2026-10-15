@@ -5,7 +5,6 @@ import { formatLongDate } from "@/utils/format";
 import { imageAt, imageSrcset } from "@/utils/images";
 
 const props = defineProps({
-  /** @type {import("@/api/content").ContentItem | null} */
   apod: {
     type: Object,
     default: null,
@@ -41,7 +40,6 @@ const date = computed(() => formatLongDate(props.apod?.publishedAt));
       class="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105"
       @error="imageFailed = true" />
 
-    <!-- Text sits on a dark scrim over the photo, so it's white in either theme. -->
     <div
       class="absolute inset-x-0 bottom-0 flex flex-col items-start gap-3 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-6 pt-24 text-white">
       <span

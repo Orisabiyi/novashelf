@@ -29,7 +29,6 @@ const index = computed(() => tracks.value.findIndex((t) => t.slug === route.para
 const track = computed(() => tracks.value[index.value] ?? null);
 const nextTrack = computed(() => tracks.value[index.value + 1] ?? null);
 
-// Pick up at the first lesson not yet finished.
 const resume = computed(() => {
   const t = track.value;
   if (!t) return null;

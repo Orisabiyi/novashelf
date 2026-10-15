@@ -1,6 +1,5 @@
 namespace Novashelf.Api.Data;
 
-/// <summary>A lesson a reader has finished.</summary>
 public sealed class LessonProgress
 {
     public required string UserId { get; set; }

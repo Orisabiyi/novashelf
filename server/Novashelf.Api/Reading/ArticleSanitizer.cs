@@ -5,13 +5,8 @@ using Ganss.Xss;
 
 namespace Novashelf.Api.Reading;
 
-/// <summary>
-/// Reduces extracted article HTML to a small, safe subset for the reader: text structure, links,
-/// images, figures and tables. No scripts, styles, classes, inline handlers or embeds.
-/// </summary>
 public static partial class ArticleSanitizer
 {
-    // Removed together with everything inside them (their text is never article content).
     private const string DropEntirely =
         "script, style, noscript, template, iframe, frame, object, embed, form, button, input, select, " +
         "textarea, svg, canvas, video, audio, nav, aside, footer, dialog";
@@ -43,7 +38,6 @@ public static partial class ArticleSanitizer
             AllowedCssClasses = new HashSet<string>(),
         })
         {
-            // Unwrap disallowed containers (div, span, section…) instead of losing their text.
             KeepChildNodes = true,
         };
 
@@ -68,13 +62,11 @@ public static partial class ArticleSanitizer
         return sanitizer;
     }
 
-    /// <param name="baseUrl">The article's address; relative links and images resolve against it.</param>
     public static string Sanitize(string html, string baseUrl)
     {
         var document = Parser.ParseDocument($"<body>{html}</body>");
         foreach (var element in document.QuerySelectorAll(DropEntirely)) element.Remove();
 
-        // Images without a usable source (e.g. leftover lazy-load placeholders) only leave gaps.
         foreach (var image in document.QuerySelectorAll("img"))
         {
             var src = image.GetAttribute("src");
@@ -91,11 +83,6 @@ public static partial class ArticleSanitizer
 
     private const string Blocks = "h1, h2, h3, h4, h5, h6, p, li, figure, blockquote, pre, table, img";
 
-    /// <summary>
-    /// Publisher templates leave bits of page furniture inside the article body: "2 Min Read",
-    /// a bare date line, "Keep Exploring", and "More from …" headings with nothing after them.
-    /// The reader already shows reading time and date, so drop them.
-    /// </summary>
     private static void RemovePageChrome(IElement body)
     {
         foreach (var element in body.QuerySelectorAll("p, div, span, h2, h3, h4, h5, h6"))
@@ -112,7 +99,6 @@ public static partial class ArticleSanitizer
         }
     }
 
-    /// <summary>Paragraphs and list items left with no text or image just leave gaps.</summary>
     private static void RemoveEmptyBlocks(IElement body)
     {
         foreach (var element in body.QuerySelectorAll("p, li, figure, figcaption, blockquote, h2, h3, h4, h5, h6").Reverse())

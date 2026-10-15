@@ -13,10 +13,8 @@ public static class ContentEndpoints
 {
     private const int MaxPage = 500;
 
-    /// <summary>The <c>topic</c> value for a signed-in reader's followed topics.</summary>
     public const string FollowingTopic = "following";
 
-    // Image widths the front end asks for first; warming these makes first paint fast.
     private const int CardImageWidth = 640;
     private const int FeaturedImageWidth = 960;
     private const int ReaderHeroWidth = 1280;
@@ -49,7 +47,6 @@ public static class ContentEndpoints
         IReadOnlyCollection<string>? keywords = null;
         if (string.Equals(topic, FollowingTopic, StringComparison.OrdinalIgnoreCase))
         {
-            // Registered only when accounts are on.
             var followed = context.RequestServices.GetService<FollowedTopics>();
             var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (followed is null || userId is null)
@@ -68,7 +65,6 @@ public static class ContentEndpoints
 
         var feed = await articles.GetArticlesAsync(keywords, page, ct);
         imageCache.Warm(feed.Items.Select(i => i.ImageUrl), CardImageWidth);
-        // The first cards on a page are the likeliest to be opened: have them ready.
         reader.Warm(feed.Items.Take(ArticlesWarmedPerPage));
         return TypedResults.Ok(images.Proxied(await readMarkers.MarkAsync(context.User, feed, ct)));
     }
@@ -85,7 +81,6 @@ public static class ContentEndpoints
     {
         var readable = await reader.GetAsync(id, ct);
         if (readable is not null) imageCache.Warm([readable.Item.ImageUrl], ReaderHeroWidth);
-        // Article images are already proxied by the reader; this covers the hero image.
         return readable is null
             ? TypedResults.NotFound()
             : TypedResults.Ok(readable with { Item = images.Proxied(readable.Item) });

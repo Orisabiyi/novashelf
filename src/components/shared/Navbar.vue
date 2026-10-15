@@ -8,9 +8,7 @@ const route = useRoute();
 const router = useRouter();
 const { account, status, isSignedIn, displayName, signOut } = useAuth();
 const initial = computed(() => displayName.value.charAt(0).toUpperCase());
-// Hide account links when accounts are switched off on the server (no database).
 const accountsAvailable = computed(() => status.value !== "unavailable");
-// Bring readers back to the page they were on after signing in.
 const authQuery = computed(() =>
   ["/login", "/sign-up"].includes(route.path) ? {} : { redirect: route.fullPath },
 );
@@ -43,7 +41,6 @@ const menuOpen = ref(false);
 const accountOpen = ref(false);
 const accountMenu = ref(null);
 
-// Close menus after navigating.
 watch(
   () => route.fullPath,
   () => {
@@ -107,7 +104,6 @@ async function handleSignOut() {
         </li>
       </ul>
 
-      <!-- Signed in: account button with a small menu -->
       <div v-if="isSignedIn" ref="accountMenu" class="relative hidden md:block">
         <button
           type="button"
@@ -153,7 +149,6 @@ async function handleSignOut() {
         </div>
       </div>
 
-      <!-- Signed out -->
       <div v-else-if="accountsAvailable" class="hidden md:flex items-center gap-1">
         <RouterLink
           :to="{ path: '/login', query: authQuery }"

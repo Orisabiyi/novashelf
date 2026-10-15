@@ -1,7 +1,6 @@
 // Calendar-day helpers for the Picture of the Day, which is keyed by date (yyyy-MM-dd).
 // Everything is UTC so a date never shifts with the reader's time zone.
 
-/** The first Astronomy Picture of the Day. */
 export const APOD_FIRST_DATE = "1995-06-16";
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -20,7 +19,6 @@ export function addDays(iso, days) {
   return date.toISOString().slice(0, 10);
 }
 
-/** A random date between the first APOD and `latest` (inclusive). */
 export function randomDateBetween(first, latest) {
   const start = Date.parse(`${first}T00:00:00Z`);
   const end = Date.parse(`${latest}T00:00:00Z`);
@@ -29,7 +27,6 @@ export function randomDateBetween(first, latest) {
   return new Date(start + offset * day).toISOString().slice(0, 10);
 }
 
-/** The date part of an APOD id ("apod-2026-10-08" -> "2026-10-08"). */
 export function apodDate(id) {
   return typeof id === "string" && id.startsWith("apod-") ? id.slice(5) : null;
 }
@@ -48,17 +45,14 @@ const shortDate = new Intl.DateTimeFormat("en", {
   timeZone: "UTC",
 });
 
-/** "Wednesday, October 8, 2026" */
 export function formatFullDate(iso) {
   return isIsoDate(iso) ? fullDate.format(new Date(`${iso}T00:00:00Z`)) : "";
 }
 
-/** "Oct 8, 2026" */
 export function formatShortDate(iso) {
   return isIsoDate(iso) ? shortDate.format(new Date(`${iso}T00:00:00Z`)) : "";
 }
 
-/** Where an item opens: APOD pictures on the Picture of the day page, everything else in the reader. */
 export function itemLink(item) {
   return item.kind === "apod" ? { path: "/apod", query: { date: apodDate(item.id) } } : `/read/${item.id}`;
 }

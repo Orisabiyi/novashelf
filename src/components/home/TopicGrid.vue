@@ -8,7 +8,6 @@ import { TOPIC_ICONS } from "@/utils/topics";
 const topics = ref([]);
 const { isFollowing } = useFollowedTopics();
 
-// Topics the reader follows come first and stand out.
 const ordered = computed(() => [
   ...topics.value.filter((t) => isFollowing(t.slug)),
   ...topics.value.filter((t) => !isFollowing(t.slug)),
@@ -18,7 +17,6 @@ onMounted(async () => {
   try {
     topics.value = await getTopics();
   } catch {
-    // Without topics the section simply doesn't render.
   }
 });
 </script>

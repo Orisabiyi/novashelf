@@ -3,9 +3,6 @@ using System.Globalization;
 
 namespace Novashelf.Api.Models;
 
-/// <summary>
-/// Content ids are prefixed with their source: <c>sfn-40277</c>, <c>apod-2026-10-05</c>, <c>img-PIA12345</c>.
-/// </summary>
 public static class ContentId
 {
     public const string ArticlePrefix = "sfn-";
@@ -39,7 +36,6 @@ public static class ContentId
         if (!id.StartsWith(ImagePrefix, StringComparison.Ordinal)) return false;
 
         var rest = id[ImagePrefix.Length..];
-        // NASA ids are short and use letters, digits, '-', '_' and '.'.
         if (rest.Length is 0 or > 128 || !rest.All(c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_' or '.'))
             return false;
 

@@ -6,7 +6,6 @@ namespace Novashelf.Api.Accounts;
 
 public sealed record RegisterRequest(string? Email, string? Password, string? FirstName, bool AgeConfirmed);
 
-/// <param name="Remember">Keep the reader signed in across browser restarts.</param>
 public sealed record LoginRequest(string? Email, string? Password, bool Remember = true);
 
 public sealed record UpdateAccountRequest(string? FirstName);
@@ -20,7 +19,6 @@ public sealed record AccountResponse(string Email, string? FirstName)
     public static AccountResponse From(AppUser user) => new(user.Email!, user.FirstName);
 }
 
-/// <summary>Input rules for accounts. The sign-up form checks the same things; this is the authority.</summary>
 public static partial class AccountValidation
 {
     public const int EmailMaxLength = 254;
@@ -63,7 +61,6 @@ public static partial class AccountValidation
             && !address.Host.EndsWith('.');
     }
 
-    /// <summary>Trimmed, inner whitespace collapsed; null when empty.</summary>
     public static string? NormalizeFirstName(string? name)
     {
         if (string.IsNullOrWhiteSpace(name)) return null;

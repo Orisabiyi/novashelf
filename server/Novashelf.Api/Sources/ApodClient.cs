@@ -7,18 +7,10 @@ using Novashelf.Api.Models;
 
 namespace Novashelf.Api.Sources;
 
-/// <summary>
-/// NASA's Astronomy Picture of the Day, via science.nasa.gov's <c>apod-basic</c> endpoint.
-/// <para>
-/// APOD moved from apod.nasa.gov to science.nasa.gov in September 2026 and the api.nasa.gov APOD
-/// API now returns a placeholder for every date. <c>apod-basic</c> is the new site's own JSON
-/// endpoint: it covers the whole archive (1995-06-16 onwards) and needs no API key. It isn't
-/// formally documented, so responses are shape-checked and failures surface as an outage.
-/// </para>
-/// </summary>
+// apod-basic is science.nasa.gov's own, undocumented JSON endpoint (api.nasa.gov's APOD API now
+// returns a placeholder), so responses are shape-checked and failures surface as an outage.
 public sealed partial class ApodClient(HttpClient http, IMemoryCache cache, TimeProvider time)
 {
-    /// <summary>The first APOD was published on 16 June 1995.</summary>
     public static readonly DateOnly FirstDate = new(1995, 6, 16);
 
     private static readonly TimeSpan LatestTtl = TimeSpan.FromMinutes(30);
@@ -29,7 +21,6 @@ public sealed partial class ApodClient(HttpClient http, IMemoryCache cache, Time
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
     };
 
-    /// <summary>The most recently published picture.</summary>
     public async Task<ContentItem?> GetLatestAsync(CancellationToken ct)
     {
         return await cache.GetOrCreateAsync("apod:latest", async entry =>
@@ -43,12 +34,10 @@ public sealed partial class ApodClient(HttpClient http, IMemoryCache cache, Time
 
     public const int ArchivePageSize = 24;
 
-    /// <summary>The archive, newest first, <see cref="ArchivePageSize"/> pictures per page.</summary>
     public async Task<PagedResult<ContentItem>> GetArchivePageAsync(int page, CancellationToken ct)
     {
         return (await cache.GetOrCreateAsync($"apod:archive:{page}", async entry =>
         {
-            // The first page gains a picture each day; older pages only shift when it does.
             entry.AbsoluteExpirationRelativeToNow = page == 1 ? LatestTtl : TimeSpan.FromHours(6);
 
             using var response = await http.GetAsync($"apod-basic?per_page={ArchivePageSize}&page={page}", ct);
@@ -67,7 +56,6 @@ public sealed partial class ApodClient(HttpClient http, IMemoryCache cache, Time
                 }
                 catch (JsonException)
                 {
-                    // Skip a malformed entry rather than lose the whole page.
                 }
             }
             return new PagedResult<ContentItem>(items, page, page < totalPages && items.Count > 0);
@@ -81,7 +69,6 @@ public sealed partial class ApodClient(HttpClient http, IMemoryCache cache, Time
 
         return await cache.GetOrCreateAsync($"apod:{date:yyyy-MM-dd}", async entry =>
         {
-            // Recent entries can still be corrected; archived ones don't change.
             entry.AbsoluteExpirationRelativeToNow = date >= today.AddDays(-2) ? LatestTtl : ArchiveTtl;
 
             using var response = await http.GetAsync($"apod-basic/{date.ToString("yyMMdd", CultureInfo.InvariantCulture)}", ct);
@@ -114,22 +101,16 @@ public sealed partial class ApodClient(HttpClient http, IMemoryCache cache, Time
             PublishedAt: new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero));
     }
 
-    /// <summary>
-    /// Plain text without the leading "Explanation:" label or the site's trailing navigation
-    /// lines ("Tomorrow's picture: …", "Your Sky Surprise: …"), which sometimes come along.
-    /// </summary>
     internal static string CleanExplanation(string? html)
     {
         var text = ExplanationLabel().Replace(HtmlToText(html ?? ""), "");
         return PageFooter().Replace(text, "").TrimEnd();
     }
 
-    /// <summary>
-    /// hdurl is the full-size original (often 3000px+). NASA's image service resizes on request, but
-    /// only under <c>/dynamicimage/assets/</c>; older entries use <c>/content/dam/</c>, which serves the
-    /// same file without resizing, so rewrite those. Some early entries point to a generic site
-    /// thumbnail instead of their picture — treat that as no image.
-    /// </summary>
+    // hdurl is the full-size original (often 3000px+). NASA's image service resizes on request, but
+    // only under /dynamicimage/assets/; older entries use /content/dam/, which serves the
+    // same file without resizing, so rewrite those. Some early entries point to a generic site
+    // thumbnail instead of their picture — treat that as no image.
     internal static string? ResizedImage(string? hdUrl)
     {
         if (!Uri.TryCreate(hdUrl?.Trim(), UriKind.Absolute, out var uri) || uri.Host != "assets.science.nasa.gov")
@@ -171,7 +152,6 @@ public sealed partial class ApodClient(HttpClient http, IMemoryCache cache, Time
         RegexOptions.IgnoreCase | RegexOptions.Singleline)]
     private static partial Regex PageFooter();
 
-    /// <summary>"Image Credit:", "Video Credit &amp; Copyright:", "Illustration Credit:" …</summary>
     [GeneratedRegex(@"^[\w\s&]*Credit[\w\s&]*:\s*", RegexOptions.IgnoreCase)]
     private static partial Regex CreditLabel();
 

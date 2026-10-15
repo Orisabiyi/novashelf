@@ -8,9 +8,6 @@ using Novashelf.Api.Reading;
 
 namespace Novashelf.Api.Learn;
 
-/// <param name="Html">Clean section body with proxied images; null when the source couldn't be read.</param>
-/// <param name="Attribution">Credit line shown with the section (Wikipedia's licence requires it).</param>
-/// <param name="Truncated">True when the section is shortened; the full text is at <paramref name="SourceUrl"/>.</param>
 public sealed record LessonSection(
     string Kind,
     string Title,
@@ -21,10 +18,6 @@ public sealed record LessonSection(
     int ReadingMinutes,
     bool Truncated);
 
-/// <summary>
-/// Builds lesson sections from their sources: Simple English Wikipedia via its REST API, NASA pages
-/// via the reader's extractor. Cached in memory and in the database like news articles.
-/// </summary>
 public sealed class LessonService(
     PageExtractor extractor,
     IArticleStore store,
@@ -33,13 +26,11 @@ public sealed class LessonService(
     TimeProvider time,
     ILogger<LessonService> logger)
 {
-    /// <summary>Bump when cleaning rules change, so stored sections are rebuilt.</summary>
     public const int FormatVersion = 6;
 
     private const int WordsPerMinute = 200;
     private static readonly TimeSpan MemoryTtl = TimeSpan.FromHours(12);
     private static readonly TimeSpan FailureTtl = TimeSpan.FromMinutes(15);
-    // Sources are reference pages that change slowly; refresh them every couple of weeks.
     private static readonly TimeSpan StoredMaxAge = TimeSpan.FromDays(14);
 
     private static readonly ConcurrentDictionary<string, Lazy<Task<string?>>> InFlight = new();
@@ -51,7 +42,6 @@ public sealed class LessonService(
         return lesson.Sources.Select((source, i) => ToSection(source, bodies[i])).ToList();
     }
 
-    /// <summary>Prepares a lesson in the background (e.g. the next one while the reader is on this one).</summary>
     public void Warm(Lesson lesson)
     {
         foreach (var source in lesson.Sources)
@@ -89,7 +79,6 @@ public sealed class LessonService(
                 "From NASA. Shortened and reformatted by Novashelf.", null, html, minutes, truncated);
     }
 
-    /// <summary>Memory, then the database, then the source. Null if the source can't be read.</summary>
     private Task<string?> GetBodyAsync(LessonSource source)
     {
         var key = CacheKey(source);
@@ -157,7 +146,6 @@ public sealed class LessonService(
         }
     }
 
-    /// <summary>Stable, short database key per source.</summary>
     internal static string CacheKey(LessonSource source)
     {
         var identity = source.Kind == LessonSource.Wikipedia ? source.Page! : source.Url!;

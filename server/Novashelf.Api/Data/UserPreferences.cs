@@ -1,6 +1,5 @@
 namespace Novashelf.Api.Data;
 
-/// <summary>A reader's reading settings, synced across their devices.</summary>
 public sealed class UserPreferences
 {
     public static readonly string[] FontSizes = ["sm", "md", "lg"];

@@ -10,7 +10,6 @@ public static class AuthEndpoints
     {
         if (!accountsEnabled)
         {
-            // Without a database there's nowhere to keep accounts; say so clearly.
             var unavailable = () => TypedResults.Problem(
                 detail: "Accounts aren't available because no database is configured.",
                 statusCode: StatusCodes.Status503ServiceUnavailable);
@@ -103,7 +102,6 @@ public static class AuthEndpoints
         HttpContext context, UserManager<AppUser> users)
     {
         var user = await users.GetUserAsync(context.User);
-        // A valid cookie for an account that no longer exists counts as signed out.
         return user is null ? TypedResults.Unauthorized() : TypedResults.Ok(AccountResponse.From(user));
     }
 

@@ -2,7 +2,6 @@
 import { onBeforeUnmount, onMounted, ref } from "vue";
 
 const props = defineProps({
-  /** Stars per square pixel. */
   density: {
     type: Number,
     default: 0.00018,

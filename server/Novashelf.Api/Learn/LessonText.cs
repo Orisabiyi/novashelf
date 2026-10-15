@@ -4,19 +4,15 @@ using AngleSharp.Html.Parser;
 
 namespace Novashelf.Api.Learn;
 
-/// <summary>Keeps lesson sections to a short read; the full source is a link away.</summary>
 public static partial class LessonText
 {
-    /// <summary>About a four-minute read.</summary>
     public const int TargetCharacters = 5000;
 
     private static readonly HtmlParser Parser = new();
 
-    /// <summary>
-    /// Cuts the HTML after roughly <paramref name="target"/> characters of text, at the start of a
-    /// section (heading) when one comes soon enough, otherwise after the current block. Never cuts
-    /// inside a paragraph.
-    /// </summary>
+    // Cuts the HTML after roughly target characters of text, at the start of a
+    // section (heading) when one comes soon enough, otherwise after the current block. Never cuts
+    // inside a paragraph.
     public static (string Html, bool Truncated) Shorten(string html, int target = TargetCharacters)
     {
         var body = Parser.ParseDocument($"<body>{html}</body>").Body!;
@@ -58,10 +54,8 @@ public static partial class LessonText
         return (body.InnerHtml, true);
     }
 
-    /// <summary>
-    /// NASA pages end with promotional blocks ("Big Bang News", "Do NASA Science with…",
-    /// "Discover More Topics From NASA"). Drop everything from the first such heading on.
-    /// </summary>
+    // NASA pages end with promotional blocks ("Big Bang News", "Do NASA Science with…",
+    // "Discover More Topics From NASA"). Drop everything from the first such heading on.
     public static string RemoveTrailingPromotions(string html)
     {
         // Removing one kind of clutter can expose another (a card behind a label behind a card),
@@ -118,10 +112,8 @@ public static partial class LessonText
         return body.InnerHtml;
     }
 
-    /// <summary>
-    /// A short label left after a card ("Featured Story", "Mars Science Laboratory"): a paragraph of
-    /// a few words that isn't a sentence.
-    /// </summary>
+    // A short label left after a card ("Featured Story", "Mars Science Laboratory"): a paragraph of
+    // a few words that isn't a sentence.
     private static bool IsStrayLabel(IElement element)
     {
         if (element.LocalName != "p") return false;
@@ -130,7 +122,6 @@ public static partial class LessonText
                && text.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length <= 5;
     }
 
-    /// <summary>A picture with no caption text, e.g. a link card's thumbnail.</summary>
     private static bool IsBareFigure(IElement element) =>
         element.LocalName is "figure" or "img" && string.IsNullOrWhiteSpace(element.TextContent);
 

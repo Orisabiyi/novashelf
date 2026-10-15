@@ -4,19 +4,13 @@ using ReadabilityParser = SmartReader.Reader;
 
 namespace Novashelf.Api.Reading;
 
-/// <param name="Html">Sanitised body with original image URLs (proxy links are added when served).</param>
 public sealed record ExtractedPage(string Html, string? Byline, int ReadingMinutes);
 
-/// <summary>
-/// Fetches third-party pages and turns them into clean reader HTML. Used for news articles and for
-/// lesson sources. The HTTP client refuses private and internal addresses (see OutboundGuard).
-/// </summary>
 public sealed class PageExtractor(HttpClient http, ILogger<PageExtractor> logger)
 {
     private const int MaxPageBytes = 5 * 1024 * 1024;
     private const int MinArticleTextLength = 400;
 
-    /// <summary>The page's main content, via a Readability port, sanitised. Null if it can't be read.</summary>
     public async Task<ExtractedPage?> ExtractAsync(string url, CancellationToken ct)
     {
         try
@@ -35,17 +29,11 @@ public sealed class PageExtractor(HttpClient http, ILogger<PageExtractor> logger
         }
         catch (Exception ex) when (!ct.IsCancellationRequested)
         {
-            // Network errors, refused private addresses, timeouts or a page the parser chokes on:
-            // callers fall back rather than fail.
             logger.LogInformation(ex, "Extractor: couldn't extract {Url}", url);
             return null;
         }
     }
 
-    /// <summary>
-    /// Downloads an HTML page (up to 5 MB). Returns the HTML and the address it ended up at after
-    /// redirects, or null when it isn't a successful HTML response.
-    /// </summary>
     public async Task<(string Html, string FinalUrl)?> FetchHtmlAsync(string url, CancellationToken ct)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
@@ -69,7 +57,6 @@ public sealed class PageExtractor(HttpClient http, ILogger<PageExtractor> logger
             return null;
         }
 
-        // After redirects, resolve relative links against where the page actually lives.
         return (html, response.RequestMessage?.RequestUri?.ToString() ?? url);
     }
 

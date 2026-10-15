@@ -11,7 +11,6 @@ const router = useRouter();
 const { signIn } = useAuth();
 
 const form = reactive({
-  // Prefilled when coming from "this email already has an account" on sign-up.
   email: typeof route.query.email === "string" ? route.query.email : "",
   password: "",
   remember: true,

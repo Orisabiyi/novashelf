@@ -7,7 +7,6 @@ import { formatRelativeDate } from "@/utils/format";
 import { imageAt } from "@/utils/images";
 import { itemTag } from "@/utils/topics";
 
-// The last few things the reader opened, to pick up where they left off. Hidden until there are some.
 const recent = ref([]);
 
 onMounted(() => {

@@ -6,11 +6,6 @@ namespace Novashelf.Api.Images;
 
 public sealed record ProcessedImage(byte[] Bytes, string ContentType);
 
-/// <summary>
-/// Downloads a remote image once, resizes it to a standard width and re-encodes it as WebP.
-/// Publishers often serve multi-megabyte originals (and NASA's own resizer can take tens of
-/// seconds), so this makes cards and article images a fraction of the size and keeps them warm.
-/// </summary>
 public sealed class ImageService(IHttpClientFactory httpClients, ILogger<ImageService> logger) : IDisposable
 {
     public const string HttpClientName = "images";
@@ -22,13 +17,8 @@ public sealed class ImageService(IHttpClientFactory httpClients, ILogger<ImageSe
     // several widths of the same picture don't each download it again.
     private readonly MemoryCache _cache = new(new MemoryCacheOptions { SizeLimit = 160L * 1024 * 1024 });
     private readonly ConcurrentDictionary<string, Lazy<Task<ProcessedImage?>>> _inFlight = new();
-    // Background warming shares the network politely with real requests.
     private readonly SemaphoreSlim _warmingSlots = new(4);
 
-    /// <summary>
-    /// Starts rendering images in the background (e.g. a feed's card images as soon as the feed is
-    /// served), so by the time the browser asks they're cached or already downloading.
-    /// </summary>
     public void Warm(IEnumerable<string?> sources, int width)
     {
         foreach (var source in sources.OfType<string>().Distinct())
@@ -49,7 +39,6 @@ public sealed class ImageService(IHttpClientFactory httpClients, ILogger<ImageSe
         }
     }
 
-    /// <summary>Null when the source can't be fetched or decoded (the caller falls back).</summary>
     public async Task<ProcessedImage?> GetAsync(string source, int width, CancellationToken ct)
     {
         var key = $"{width}|{source}";
@@ -126,7 +115,6 @@ public sealed class ImageService(IHttpClientFactory httpClients, ILogger<ImageSe
         return bytes;
     }
 
-    /// <summary>Scales down to <paramref name="width"/> (never up) and encodes WebP.</summary>
     internal static ProcessedImage? Resize(byte[] original, int width)
     {
         using var data = SKData.CreateCopy(original);
@@ -164,7 +152,6 @@ public sealed class ImageService(IHttpClientFactory httpClients, ILogger<ImageSe
         origin is SKEncodedOrigin.LeftTop or SKEncodedOrigin.RightTop
             or SKEncodedOrigin.RightBottom or SKEncodedOrigin.LeftBottom;
 
-    /// <summary>Applies the EXIF orientation so camera photos aren't shown sideways or mirrored.</summary>
     internal static SKBitmap Orient(SKBitmap bitmap, SKEncodedOrigin origin)
     {
         if (origin is SKEncodedOrigin.TopLeft or SKEncodedOrigin.Default) return bitmap.Copy();
