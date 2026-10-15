@@ -3,12 +3,8 @@ using System.Net.Sockets;
 
 namespace Novashelf.Api.Infrastructure;
 
-/// <summary>
-/// HTTP handler for fetching third-party pages (article URLs come from an external API, not from
-/// us). Every connection — including after redirects — is checked at socket level so the server
-/// never talks to loopback, private, link-local (e.g. cloud metadata at 169.254.169.254) or other
-/// non-public addresses. Checking the resolved IP at connect time also defeats DNS rebinding.
-/// </summary>
+// Every connection, including after redirects, is checked at connect time, so the server never
+// reaches non-public addresses and DNS rebinding can't get around the check.
 public static class OutboundGuard
 {
     public static SocketsHttpHandler CreateHandler() => new()

@@ -3,17 +3,12 @@ using System.Text.RegularExpressions;
 
 namespace Novashelf.Api.Learn;
 
-/// <summary>
-/// The beginner learning paths: tracks of lessons in order. Edited by hand in curriculum.json and
-/// compiled into the API, so the server only ever fetches the sources listed there.
-/// </summary>
 public sealed partial class Curriculum
 {
     public static readonly IReadOnlySet<string> NasaHosts = new HashSet<string> { "science.nasa.gov", "www.nasa.gov" };
 
     public required IReadOnlyList<Track> Tracks { get; init; }
 
-    /// <summary>The lesson with its track, and the lessons before and after it across all tracks.</summary>
     public (Track Track, Lesson Lesson, int Number, LessonRef? Previous, LessonRef? Next)? Find(string trackSlug, string lessonSlug)
     {
         var all = Tracks.SelectMany(t => t.Lessons.Select(l => (Track: t, Lesson: l))).ToList();
@@ -42,7 +37,6 @@ public sealed partial class Curriculum
         return curriculum;
     }
 
-    /// <summary>Everything that could go wrong when hand-editing the file.</summary>
     internal List<string> Validate()
     {
         var problems = new List<string>();
@@ -93,14 +87,12 @@ public sealed partial class Curriculum
     [GeneratedRegex("^[a-z0-9]+(-[a-z0-9]+)*$")]
     private static partial Regex Slug();
 
-    // Article titles as they appear in Wikipedia URLs, e.g. "Rover_(space_exploration)".
     [GeneratedRegex(@"^[A-Za-z0-9_()\-.,']{1,120}$")]
     private static partial Regex WikipediaPage();
 }
 
 public sealed record Track(string Slug, string Title, string Summary, string Icon, bool StartHere, IReadOnlyList<Lesson> Lessons);
 
-/// <param name="Topic">An Explore topic slug for the lesson's "In the news" articles, if any.</param>
 public sealed record Lesson(
     string Slug,
     string Title,
@@ -109,7 +101,6 @@ public sealed record Lesson(
     IReadOnlyList<string> KeyIdeas,
     IReadOnlyList<LessonSource> Sources);
 
-/// <param name="Kind">"wikipedia" (Simple English Wikipedia article name in Page) or "nasa" (page Url).</param>
 public sealed record LessonSource(string Kind, string Title, string? Page, string? Url)
 {
     public const string Wikipedia = "wikipedia";

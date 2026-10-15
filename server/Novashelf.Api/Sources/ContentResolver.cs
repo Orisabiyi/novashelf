@@ -2,7 +2,6 @@ using Novashelf.Api.Models;
 
 namespace Novashelf.Api.Sources;
 
-/// <summary>Looks up a single content item by its prefixed id, from whichever source owns it.</summary>
 public sealed class ContentResolver(SpaceflightNewsClient articles, ApodClient apod, NasaImagesClient images)
 {
     public Task<ContentItem?> GetAsync(string id, CancellationToken ct)

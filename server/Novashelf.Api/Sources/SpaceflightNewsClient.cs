@@ -6,7 +6,6 @@ using Novashelf.Api.Models;
 
 namespace Novashelf.Api.Sources;
 
-/// <summary>Client for https://api.spaceflightnewsapi.net (v4). No API key required.</summary>
 public sealed class SpaceflightNewsClient(HttpClient http, IMemoryCache cache)
 {
     public const int PageSize = 20;
@@ -18,7 +17,6 @@ public sealed class SpaceflightNewsClient(HttpClient http, IMemoryCache cache)
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
     };
 
-    /// <param name="keywords">Optional title keywords; an article matches if its title contains any of them.</param>
     public async Task<PagedResult<ContentItem>> GetArticlesAsync(IReadOnlyCollection<string>? keywords, int page, CancellationToken ct)
     {
         var titleFilter = keywords is { Count: > 0 } ? string.Join(',', keywords) : null;
@@ -36,7 +34,6 @@ public sealed class SpaceflightNewsClient(HttpClient http, IMemoryCache cache)
 
             var items = response.Results.Where(a => !IsApod(a)).Select(Map).ToList();
 
-            // Opening an article looks it up by id; the feed already has it, so save the round trip.
             foreach (var article in response.Results)
                 cache.Set($"sfn:article:{article.Id}", (ContentItem?)Map(article), ArticleTtl);
             return new PagedResult<ContentItem>(items, page, response.Next is not null);
@@ -69,10 +66,8 @@ public sealed class SpaceflightNewsClient(HttpClient http, IMemoryCache cache)
         PublishedAt: a.PublishedAt,
         Topic: Topics.Tag(a.Title));
 
-    /// <summary>
-    /// Spaceflight News also indexes NASA's APOD pages, with summaries scraped from the page chrome.
-    /// APOD has its own endpoint, so keep it out of the article feed. (The API has no exclude filter.)
-    /// </summary>
+    // Spaceflight News also indexes NASA's APOD pages, with summaries scraped from the page chrome.
+    // APOD has its own endpoint, so keep it out of the article feed. (The API has no exclude filter.)
     internal static bool IsApod(SfnArticle a) =>
         a.Title.TrimStart().StartsWith("APOD:", StringComparison.OrdinalIgnoreCase)
         || a.Url.Contains("science.nasa.gov/image-article/apod", StringComparison.OrdinalIgnoreCase);

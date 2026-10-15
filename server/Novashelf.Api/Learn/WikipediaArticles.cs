@@ -4,11 +4,6 @@ using Novashelf.Api.Reading;
 
 namespace Novashelf.Api.Learn;
 
-/// <summary>
-/// Turns a Simple English Wikipedia article (Parsoid HTML from the REST API) into a readable lesson
-/// section: no reference markers, infoboxes, navigation boxes or reference/link sections, and
-/// larger images than the article's thumbnails.
-/// </summary>
 public static class WikipediaArticles
 {
     public const string Host = "simple.wikipedia.org";
@@ -17,7 +12,6 @@ public static class WikipediaArticles
 
     public static string ArticleUrl(string page) => $"https://{Host}/wiki/{Uri.EscapeDataString(page)}";
 
-    // Sections that list references or links rather than explain anything.
     private static readonly HashSet<string> SkippedSections = new(StringComparer.OrdinalIgnoreCase)
     {
         "References", "Notes", "Sources", "Other websites", "Related pages", "Further reading",
@@ -38,7 +32,6 @@ public static class WikipediaArticles
         foreach (var heading in body.QuerySelectorAll("h2").ToList())
         {
             if (!SkippedSections.Contains(heading.TextContent.Trim())) continue;
-            // Parsoid wraps each section in <section>; remove the whole thing.
             if (heading.ParentElement is { LocalName: "section" } section) section.Remove();
             else heading.Remove();
         }
@@ -47,11 +40,10 @@ public static class WikipediaArticles
 
         foreach (var image in body.QuerySelectorAll("img")) UseLargerRendition(image);
 
-        // Relative links ("./Planet") resolve against the article's address.
         return ArticleSanitizer.Sanitize(body.InnerHtml, ArticleUrl(page));
     }
 
-    /// <summary>Article thumbnails are ~220px; take the largest candidate from srcset instead.</summary>
+    // Article thumbnails are ~220px; take the largest candidate from srcset instead.
     private static void UseLargerRendition(IElement image)
     {
         var largest = image.GetAttribute("srcset")?

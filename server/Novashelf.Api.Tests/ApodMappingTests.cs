@@ -4,7 +4,6 @@ using Novashelf.Api.Sources;
 
 namespace Novashelf.Api.Tests;
 
-/// <summary>Maps trimmed real responses from https://science.nasa.gov/wp-json/wp/v2/apod-basic/{YYMMDD}.</summary>
 public class ApodMappingTests
 {
     private static readonly JsonSerializerOptions SnakeCase = new(JsonSerializerDefaults.Web)

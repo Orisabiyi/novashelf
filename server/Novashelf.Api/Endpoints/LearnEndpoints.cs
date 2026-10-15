@@ -41,7 +41,6 @@ public static class LearnEndpoints
     {
         if (curriculum.Find(track, lesson) is not { } found) return TypedResults.NotFound();
 
-        // Have the next lesson ready by the time the reader gets there.
         if (found.Next is { } next && curriculum.Find(next.Track, next.Slug) is { } upcoming)
             lessons.Warm(upcoming.Lesson);
 

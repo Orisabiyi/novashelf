@@ -4,7 +4,6 @@ using Novashelf.Api.Sources;
 
 namespace Novashelf.Api.Tests;
 
-/// <summary>Maps trimmed real responses from each API to <see cref="ContentItem"/>.</summary>
 public class SourceMappingTests
 {
     private static readonly JsonSerializerOptions SnakeCase = new(JsonSerializerDefaults.Web)

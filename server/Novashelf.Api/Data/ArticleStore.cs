@@ -3,7 +3,6 @@ using Npgsql;
 
 namespace Novashelf.Api.Data;
 
-/// <summary>Persistent store for extracted articles. Failures never break the reader.</summary>
 public interface IArticleStore
 {
     Task<CachedArticle?> GetAsync(string contentId, CancellationToken ct);
@@ -11,7 +10,6 @@ public interface IArticleStore
     Task SaveAsync(CachedArticle article, CancellationToken ct);
 }
 
-/// <summary>Used when no database is configured: the in-memory cache is all there is.</summary>
 public sealed class NullArticleStore : IArticleStore
 {
     public Task<CachedArticle?> GetAsync(string contentId, CancellationToken ct) => Task.FromResult<CachedArticle?>(null);
@@ -19,10 +17,6 @@ public sealed class NullArticleStore : IArticleStore
     public Task SaveAsync(CachedArticle article, CancellationToken ct) => Task.CompletedTask;
 }
 
-/// <summary>
-/// Postgres-backed store. Uses a context factory because background warming outlives the request
-/// that started it. A database hiccup is logged and treated as a cache miss.
-/// </summary>
 public sealed class PostgresArticleStore(IDbContextFactory<AppDbContext> contexts, ILogger<PostgresArticleStore> logger)
     : IArticleStore
 {

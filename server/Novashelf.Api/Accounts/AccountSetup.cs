@@ -11,7 +11,6 @@ public static class AccountSetup
     public const string AuthRateLimitPolicy = "auth";
     public const string SessionCookieName = "novashelf_session";
 
-    /// <summary>Reader accounts with ASP.NET Core Identity, signed in with an HttpOnly cookie.</summary>
     public static IServiceCollection AddNovashelfAccounts(this IServiceCollection services, IHostEnvironment environment)
     {
         services
@@ -19,7 +18,6 @@ public static class AccountSetup
             {
                 options.User.RequireUniqueEmail = true;
 
-                // Length over composition rules (current NIST guidance): 8+ characters, any kind.
                 options.Password.RequiredLength = AccountValidation.PasswordMinLength;
                 options.Password.RequireDigit = false;
                 options.Password.RequireLowercase = false;
@@ -27,12 +25,10 @@ public static class AccountSetup
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequiredUniqueChars = 1;
 
-                // Slow down password guessing against a single account.
                 options.Lockout.AllowedForNewUsers = true;
                 options.Lockout.MaxFailedAccessAttempts = 5;
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
 
-                // No email sending yet, so accounts work without confirming the address.
                 options.SignIn.RequireConfirmedAccount = false;
             })
             .AddEntityFrameworkStores<AppDbContext>()
@@ -77,8 +73,6 @@ public static class AccountSetup
         services.AddScoped<IReadMarkers>(sp => sp.GetRequiredService<ReadingHistory>());
         services.AddScoped<FollowedTopics>();
 
-        // Per-address limits on sign-in, sign-up, password changes and deletion, on top of
-        // per-account lockout. See ClientAddress for where the addresses come from.
         services.AddSingleton<ClientAddress>();
         services.AddRateLimiter(options =>
         {

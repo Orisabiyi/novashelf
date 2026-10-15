@@ -85,7 +85,6 @@ public class CurriculumTests
 
 public class WikipediaArticlesTests
 {
-    // A trimmed Parsoid response, the format the Wikipedia REST API returns.
     private const string Parsoid = """
         <html><head><style>.x{}</style></head><body>
         <section data-mw-section-id="0">

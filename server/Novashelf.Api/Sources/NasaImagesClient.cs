@@ -4,7 +4,6 @@ using Novashelf.Api.Models;
 
 namespace Novashelf.Api.Sources;
 
-/// <summary>Client for the NASA Image and Video Library (https://images-api.nasa.gov). No API key required.</summary>
 public sealed class NasaImagesClient(HttpClient http, IMemoryCache cache)
 {
     public const int PageSize = 24;
@@ -49,7 +48,6 @@ public sealed class NasaImagesClient(HttpClient http, IMemoryCache cache)
         var data = item.Data?.FirstOrDefault();
         if (data is null || string.IsNullOrWhiteSpace(data.NasaId)) return null;
 
-        // Prefer the ~medium rendition; fall back to the preview thumbnail.
         var image = item.Links?.FirstOrDefault(l => l.Href.Contains("~medium.", StringComparison.Ordinal))?.Href
             ?? item.Links?.FirstOrDefault(l => l.Rel == "preview")?.Href;
 

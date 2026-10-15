@@ -9,7 +9,6 @@ namespace Novashelf.Api.Accounts;
 
 public sealed record HistoryEntry(ContentItem Item, DateTimeOffset ReadAt);
 
-/// <summary>Marks items the signed-in reader has already opened. A no-op without accounts.</summary>
 public interface IReadMarkers
 {
     Task<PagedResult<ContentItem>> MarkAsync(ClaimsPrincipal user, PagedResult<ContentItem> page, CancellationToken ct);
@@ -39,7 +38,6 @@ public sealed class ReadingHistory(AppDbContext db, UserManager<AppUser> users, 
         return page with { Items = page.Items.Select(i => i with { Read = read.Contains(i.Id) }).ToList() };
     }
 
-    /// <summary>Adds or refreshes an entry, keeping at most <see cref="ReadingHistoryEntry.MaxPerUser"/>.</summary>
     public async Task RecordAsync(string userId, ContentItem item, CancellationToken ct)
     {
         var now = time.GetUtcNow();
