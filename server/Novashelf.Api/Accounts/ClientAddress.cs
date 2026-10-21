@@ -2,8 +2,8 @@ using System.Net;
 
 namespace Novashelf.Api.Accounts;
 
-// Proxy:ClientAddressHeader names a header the edge sets and won't let callers forge (Cloudflare's
-// CF-Connecting-IP); leave it unset on hosts without such an edge. Through Vercel's /api rewrite
+// Proxy:ClientAddressHeader names a header the edge sets and won't let callers forge (Caddy's
+// X-Connecting-IP); leave it unset on hosts without such an edge. Through Vercel's /api rewrite
 // the connecting address is a Vercel server, and the entry before it in X-Forwarded-For is the
 // reader. Direct callers can forge that entry, so the connecting address has its own limit too.
 public sealed class ClientAddress(IConfiguration config)

@@ -5,7 +5,7 @@
   "buildCommand": "pnpm build",
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "https://novashelf-api.onrender.com/api/$1" },
+    { "source": "/api/(.*)", "destination": "https://16-192-99-209.sslip.io/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
