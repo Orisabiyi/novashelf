@@ -1,0 +1,15 @@
+# Trusting every proxy keeps the X-Forwarded-For that Vercel sends (with the reader's address) and
+# appends Vercel's. That header stays forgeable; X-Connecting-IP is always overwritten with the
+# real peer, so the rate limiter can trust it (see Accounts/ClientAddress.cs).
+{
+	servers {
+		trusted_proxies static 0.0.0.0/0 ::/0
+	}
+}
+
+{$API_HOST} {
+	encode zstd gzip
+	reverse_proxy api:8080 {
+		header_up X-Connecting-IP {remote_host}
+	}
+}
