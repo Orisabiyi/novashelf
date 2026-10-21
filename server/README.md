@@ -25,8 +25,8 @@ or API keys are needed.
 | `ConnectionStrings:Default` | Postgres connection (Npgsql `Host=…;Database=…;Username=…;Password=…;SSL Mode=Require` format). Stores extracted articles so they survive restarts. Use Neon's pooled host. |
 | `ConnectionStrings:Migrations` | Optional direct (non-pooler) connection used to apply migrations; defaults to `Default`. |
 | `Database:MigrateOnStartup` | Apply pending migrations when the API starts (default `true`). |
-| `Images:SigningKey` | Secret used to sign `/api/img` URLs. Optional in development (a random key is generated per run, so image URLs from before a restart stop working until the page reloads). **Set it in production**, e.g. `dotnet user-secrets set "Images:SigningKey" "<long random string>"` locally or an environment variable on the host (render.yaml generates one). |
-| `Proxy:ClientAddressHeader` | Header set by the edge in front of the API with the address that connected to it, e.g. `CF-Connecting-IP` on Render (Cloudflare rejects requests that forge it). Used for the sign-in rate limits, together with the `X-Forwarded-For` entry before that address (the reader, when the request came through Vercel). Leave unset on hosts without such an edge: anyone could set the header. |
+| `Images:SigningKey` | Secret used to sign `/api/img` URLs. Optional in development (a random key is generated per run, so image URLs from before a restart stop working until the page reloads). **Set it in production**, e.g. `dotnet user-secrets set "Images:SigningKey" "<long random string>"` locally or an environment variable on the host (`Images__SigningKey` in the server's `.env`). |
+| `Proxy:ClientAddressHeader` | Header set by the edge in front of the API with the address that connected to it, e.g. `X-Connecting-IP` on EC2 (Caddy always overwrites it with the real peer; see `server/deploy/Caddyfile`). Used for the sign-in rate limits, together with the `X-Forwarded-For` entry before that address (the reader, when the request came through Vercel). Leave unset on hosts without such an edge: anyone could set the header. |
 
 ## Run
 
