@@ -19,6 +19,7 @@ public sealed record ReadableContent(
 
 public sealed class ReaderService(
     PageExtractor extractor,
+    FeedExtractor feeds,
     ContentResolver resolver,
     ImageUrlSigner images,
     IArticleStore store,
@@ -29,7 +30,7 @@ public sealed class ReaderService(
 
     private static readonly TimeSpan StoredArticleMaxAge = TimeSpan.FromDays(30);
 
-    private const int WordsPerMinute = 230;
+    internal const int WordsPerMinute = 230;
 
     private static readonly TimeSpan ExtractedTtl = TimeSpan.FromHours(12);
     private static readonly TimeSpan FallbackTtl = TimeSpan.FromMinutes(15);
@@ -74,6 +75,9 @@ public sealed class ReaderService(
             });
         }
     }
+
+    // Extracts (and stores) an article now, so it's ready before anyone opens it.
+    public Task PrepareAsync(ContentItem item, CancellationToken ct) => GetForItemAsync(item).WaitAsync(ct);
 
     private Task<ReadableContent> GetForItemAsync(ContentItem item)
     {
@@ -162,7 +166,7 @@ public sealed class ReaderService(
 
     private async Task<ReadableContent?> ExtractAsync(ContentItem item, CancellationToken ct)
     {
-        var page = await extractor.ExtractAsync(item.Url!, ct);
+        var page = await extractor.ExtractAsync(item.Url!, ct) ?? await feeds.ExtractAsync(item.Url!, ct);
         return page is null ? null : new ReadableContent(item, page.Html, page.Byline, page.ReadingMinutes, Extracted: true);
     }
 

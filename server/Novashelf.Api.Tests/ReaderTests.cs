@@ -188,3 +188,79 @@ public class StoredItemTests
     public void Missing_or_broken_item_details_mean_no_stored_item(string? json) =>
         Assert.Null(ReaderService.DeserializeItem(json));
 }
+
+public class FeedExtractorTests
+{
+    private static readonly Uri Article = new("https://www.nasaspaceflight.com/2026/11/launch-preview-112426/");
+
+    private const string Rss = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/">
+          <channel>
+            <item>
+              <title>Launch Preview</title>
+              <link>https://www.nasaspaceflight.com/2026/11/launch-preview-112426/</link>
+              <dc:creator><![CDATA[Joe Kangas]]></dc:creator>
+              <content:encoded><![CDATA[<p>Ten rockets are set to launch.</p>]]></content:encoded>
+            </item>
+            <item>
+              <title>No body</title>
+              <link>https://www.nasaspaceflight.com/2026/11/other/</link>
+            </item>
+          </channel>
+        </rss>
+        """;
+
+    [Fact]
+    public void Rss_items_are_read_with_their_full_content_and_author()
+    {
+        var entries = FeedExtractor.ParseRss(Rss);
+
+        Assert.Equal(2, entries.Count);
+        Assert.Equal("<p>Ten rockets are set to launch.</p>", entries[0].Html);
+        Assert.Equal("Joe Kangas", entries[0].Creator);
+        Assert.Null(entries[1].Html);
+    }
+
+    [Fact]
+    public void Feeds_with_a_doctype_are_refused()
+    {
+        const string xml = """<?xml version="1.0"?><!DOCTYPE rss [<!ENTITY x "boom">]><rss><channel><item><link>&x;</link></item></channel></rss>""";
+
+        Assert.ThrowsAny<System.Xml.XmlException>(() => FeedExtractor.ParseRss(xml));
+    }
+
+    [Theory]
+    [InlineData("https://www.nasaspaceflight.com/2026/11/launch-preview-112426/", true)]
+    [InlineData("https://nasaspaceflight.com/2026/11/launch-preview-112426", true)]
+    [InlineData("https://www.nasaspaceflight.com/2026/11/launch-preview-112426/?utm_source=rss", true)]
+    [InlineData("https://www.nasaspaceflight.com/2026/11/launch-preview-112427/", false)]
+    [InlineData("https://evil.example/2026/11/launch-preview-112426/", false)]
+    [InlineData("not a url", false)]
+    public void Feed_links_match_the_article_ignoring_www_trailing_slash_and_query(string link, bool expected) =>
+        Assert.Equal(expected, FeedExtractor.IsSameArticle(link, Article));
+
+    [Fact]
+    public void The_feed_lives_at_the_publishers_root()
+    {
+        Assert.Equal("https://www.nasaspaceflight.com/feed/", FeedExtractor.FeedUrlFor(Article));
+    }
+
+    [Fact]
+    public void Featured_image_footer_and_offsite_banners_are_removed()
+    {
+        var html = FeedExtractor.CleanContent("""
+            <img src="https://www.nasaspaceflight.com/hero.jpg" class="attachment-full size-full wp-post-image" />
+            <p>Story text.</p>
+            <p><a href="https://www.nasaspaceflight.com/full.jpg"><img src="https://www.nasaspaceflight.com/photo.jpg" /></a></p>
+            <p><a href="https://shop.nasaspaceflight.com/collections/x"><img src="https://www.nasaspaceflight.com/banner.webp" /></a></p>
+            <p>The post <a href="https://www.nasaspaceflight.com/2026/11/launch-preview-112426/">Launch Preview</a> appeared first on <a href="https://www.nasaspaceflight.com">NASASpaceFlight.com</a>.</p>
+            """, Article);
+
+        Assert.DoesNotContain("hero.jpg", html);
+        Assert.DoesNotContain("banner.webp", html);
+        Assert.DoesNotContain("appeared first on", html);
+        Assert.Contains("Story text.", html);
+        Assert.Contains("photo.jpg", html);
+    }
+}
