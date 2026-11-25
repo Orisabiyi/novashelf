@@ -76,6 +76,9 @@ public sealed class ReaderService(
         }
     }
 
+    // Extracts (and stores) an article now, so it's ready before anyone opens it.
+    public Task PrepareAsync(ContentItem item, CancellationToken ct) => GetForItemAsync(item).WaitAsync(ct);
+
     private Task<ReadableContent> GetForItemAsync(ContentItem item)
     {
         if (item.Kind != ContentKind.Article || item.Url is null)
