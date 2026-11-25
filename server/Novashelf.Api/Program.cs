@@ -66,6 +66,11 @@ builder.Services.AddHttpClient<PageExtractor>(c =>
     c.Timeout = TimeSpan.FromSeconds(25);
     c.DefaultRequestHeaders.UserAgent.ParseAdd($"Mozilla/5.0 (compatible; {userAgent})");
 }).ConfigurePrimaryHttpMessageHandler(OutboundGuard.CreateHandler);
+builder.Services.AddHttpClient<FeedExtractor>(c =>
+{
+    c.Timeout = TimeSpan.FromSeconds(25);
+    c.DefaultRequestHeaders.UserAgent.ParseAdd($"Mozilla/5.0 (compatible; {userAgent})");
+}).ConfigurePrimaryHttpMessageHandler(OutboundGuard.CreateHandler);
 
 var app = builder.Build();
 

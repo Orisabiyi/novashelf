@@ -60,7 +60,7 @@ public sealed class PageExtractor(HttpClient http, ILogger<PageExtractor> logger
         return (html, response.RequestMessage?.RequestUri?.ToString() ?? url);
     }
 
-    private static async Task<string?> ReadLimitedAsync(HttpContent content, CancellationToken ct)
+    internal static async Task<string?> ReadLimitedAsync(HttpContent content, CancellationToken ct)
     {
         if (content.Headers.ContentLength > MaxPageBytes) return null;
 
